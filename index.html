@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#B5703E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Fale com Paulo">
+<meta name="description" content="Protótipo do Fale com Paulo: conselheiro bíblico virtual por texto, áudio e videochamada, com versículos em domínio público.">
+<title>Fale com Paulo — Protótipo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23B5703E'/%3E%3Cpath d='M28 32h44a6 6 0 016 6v22a6 6 0 01-6 6H46l-12 10V66h-6a6 6 0 01-6-6V38a6 6 0 016-6z' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23B5703E'/%3E%3Cpath d='M28 32h44a6 6 0 016 6v22a6 6 0 01-6 6H46l-12 10V66h-6a6 6 0 01-6-6V38a6 6 0 016-6z' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Fale%20com%20Paulo%22%2C%22short_name%22%3A%22Paulo%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23FBF7F2%22%2C%22theme_color%22%3A%22%23B5703E%22%2C%22lang%22%3A%22pt-BR%22%7D">
+<style>
+:root{--bg:#FBF7F2;--surface:#F3ECE3;--text:#2B211C;--sub:#6B5B4E;--ter:#9C8B7D;--accent:#B5703E;--accent2:#6F9277;--gold:#D2A04A;--accentSoft:#F1E0D2;--border:#E4D9CC;--danger:#B3261E;--ok:#2E7D4F;--warn:#A0611B;--callbg:#2A201B;--callink:#FBF4EC;--callsub:#CBB9A8}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#EADFD2;color:var(--text);-webkit-font-smoothing:antialiased}
+button,input,textarea{font-family:inherit}
+#wrap{min-height:100%;display:flex;gap:40px;justify-content:center;align-items:flex-start;padding:28px 20px;flex-wrap:wrap}
+#phone{position:relative;width:390px;height:800px;max-height:calc(100vh - 56px);min-height:600px;border:10px solid #2B211C;border-radius:46px;overflow:hidden;background:var(--bg);box-shadow:0 20px 50px rgba(43,33,28,.25)}
+#app{position:absolute;inset:0;display:flex;flex-direction:column}
+#info{max-width:420px;font-size:14px;line-height:21px;color:var(--sub)}
+#info h1{font-size:22px;color:var(--text);margin:8px 0 6px}#info h2{font-size:15px;color:var(--text);margin:18px 0 4px}#info a{color:var(--accent)}#info ul{padding-left:18px;margin:4px 0}
+@media (max-width:820px){#info{max-width:390px}}
+@media (max-width:520px){body{background:var(--bg)}#wrap{display:block;padding:0}#phone{width:100%;height:100vh;height:100dvh;max-height:none;min-height:0;border:0;border-radius:0;box-shadow:none}#info{display:none}}
+.col{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--bg)}
+.main{flex:1;min-height:0}
+.scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.pad{padding:14px 16px 18px}
+.hdr{display:flex;align-items:center;gap:10px;padding:12px 14px;padding-top:calc(12px + env(safe-area-inset-top));border-bottom:1px solid var(--border);background:var(--bg)}
+.hm{flex:1;min-width:0}.ht{font-size:16px;font-weight:600}.hs{font-size:12px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.av{flex:0 0 auto;border-radius:999px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600}.av.alt{background:var(--accent2)}
+.back{border:0;background:transparent;font-size:26px;color:var(--text);cursor:pointer;padding:0 6px;line-height:1}
+.seg{display:flex;gap:4px;padding:4px;margin:10px 14px 0;border-radius:999px;background:var(--surface)}
+.seg button{flex:1;border:0;border-radius:999px;padding:8px 0;cursor:pointer;font-size:13px;font-weight:500;background:transparent;color:var(--sub)}
+.seg button.on{background:#fff;color:var(--text);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.chat{padding:6px 12px 10px}
+.disc{font-size:12px;line-height:17px;color:var(--sub);text-align:center;margin:8px 12px}
+.row{display:flex;align-items:flex-end;gap:6px;margin:8px 0}.row.me{justify-content:flex-end}
+.bub{max-width:86%;padding:9px 12px;font-size:15px;line-height:22px}
+.bub.mine{background:var(--accent);color:#fff;border-radius:18px 18px 4px 18px}
+.bub.his{background:#fff;border:1px solid var(--border);border-radius:18px 18px 18px 4px}
+.bt{font-size:15px;line-height:22px}
+.verse{border-left:3px solid var(--accent);padding:2px 0 2px 10px;margin:8px 0}.vt{font-style:italic}.vr{font-size:12px;color:var(--sub);margin-bottom:4px}
+.blk{margin-top:6px}.bl{font-size:12px;font-weight:600;color:var(--sub)}.bc{font-size:14px;line-height:20px;color:var(--sub)}.bn{font-size:12px;line-height:17px;color:var(--sub);margin-top:6px}
+.link{border:0;background:transparent;padding:6px 0 0;color:var(--sub);font-size:12px;cursor:pointer;text-decoration:underline}.link.c{display:block;margin:8px auto 0}
+.typing{display:flex;gap:4px;padding:13px 14px}.typing span{width:7px;height:7px;border-radius:9px;background:var(--ter);animation:blink 1.2s infinite}.typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+.vmsg{display:flex;align-items:center;gap:8px;min-width:190px}.vl{font-size:12px;font-weight:600}.vtr{font-size:13px;line-height:19px;margin-top:6px}
+.wave{flex:1;width:100%;height:24px;fill:var(--border)}.wave.light{fill:rgba(255,255,255,.9)}.wave.live rect{fill:var(--accent);animation:wv .7s ease-in-out infinite alternate;transform-origin:center;transform-box:fill-box}
+@keyframes wv{from{transform:scaleY(.35)}to{transform:scaleY(1.25)}}
+.aud{display:flex;align-items:center;gap:10px;min-width:210px}.audw{flex:1;min-width:0}
+.play{width:38px;height:38px;flex:0 0 auto;border-radius:999px;border:0;background:var(--accent);color:#fff;cursor:pointer;font-size:13px;font-weight:700}
+.prog{height:3px;border-radius:2px;background:var(--border);margin-top:3px;overflow:hidden}.progf{height:3px;width:0;background:var(--accent)}.progf.run{animation:prog linear forwards}
+@keyframes prog{from{width:0}to{width:100%}}
+.dur{font-size:12px;color:var(--sub);flex:0 0 auto}
+.comp{padding:8px 12px 10px;padding-bottom:calc(10px + env(safe-area-inset-bottom) * 0);border-top:1px solid var(--border);background:var(--bg)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.comp .chips{margin-bottom:8px}
+.inrow{display:flex;gap:8px;align-items:center}
+.in{width:100%;border:1px solid var(--border);border-radius:12px;padding:11px 12px;background:#fff;color:var(--text);font-size:16px;outline:none}.in:focus{border-color:var(--accent)}
+.in.pill{border-radius:999px;padding:10px 14px}
+textarea.in{resize:vertical;min-height:80px}
+.send{width:42px;height:42px;flex:0 0 auto;border-radius:999px;border:0;background:var(--accent);color:#fff;cursor:pointer;font-size:18px;font-weight:700}.send.big{width:52px;height:52px;font-size:20px}
+.mic{flex:0 0 auto;border-radius:999px;border:0;background:var(--accent);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}.mic svg{width:42%;height:42%}
+.mic.live{background:var(--danger);animation:pulse 1s ease-in-out infinite;box-shadow:0 0 0 6px rgba(179,38,30,.18)}.mic:disabled{opacity:.4}
+@keyframes pulse{50%{transform:scale(1.06)}}
+.rec{margin-bottom:8px}.recrow{display:flex;align-items:center;gap:8px}.rect{font-size:12px;font-weight:600;color:var(--danger);flex:0 0 auto}
+.hint{font-size:12px;line-height:17px;color:var(--sub);margin-top:4px}.hint.c{text-align:center;margin-top:6px}
+.note{font-size:12px;line-height:17px;color:var(--text);background:var(--surface);border-radius:10px;padding:8px 10px;margin-bottom:8px}
+.btn-primary{width:100%;border:0;border-radius:14px;padding:14px 16px;background:var(--accent);color:#fff;font-size:15px;font-weight:600;cursor:pointer}.btn-primary:disabled{background:var(--surface);color:var(--ter);cursor:default}
+.btn-ghost{border:1px solid var(--border);border-radius:999px;padding:7px 12px;background:#fff;color:var(--text);font-size:13px;font-weight:500;cursor:pointer}.btn-ghost.danger{border-color:var(--danger);color:var(--danger);background:#FBEDEC}
+.chip{border:1px solid var(--border);background:#fff;color:var(--text);border-radius:999px;padding:7px 12px;cursor:pointer;font-size:14px;line-height:20px;text-align:left;max-width:100%}
+.chip.on{border-color:var(--accent);background:var(--accentSoft)}.chip.on .cl{font-weight:600}.chip.card{border-radius:14px;padding:12px 14px}.chip.full{width:100%;border-radius:14px;padding:13px 14px}
+.cl{font-weight:500}.cs{display:block;color:var(--sub);font-size:12px;margin-top:2px}
+.tabs{display:flex;border-top:1px solid var(--border);background:var(--bg);padding:6px 4px calc(8px + env(safe-area-inset-bottom))}
+.tab{flex:1;border:0;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;color:var(--ter)}
+.tab svg{width:22px;height:22px}.tab span{font-size:11px;font-weight:500}.tab.on{color:var(--accent)}.tab.on span{font-weight:600}
+.crisis{border:2px solid var(--danger);border-radius:16px;padding:14px;background:#fff}.crisis.dark{background:var(--callbg);color:var(--callink)}
+.ct{font-size:16px;font-weight:700;margin-bottom:6px}.cl2{font-size:14px;line-height:21px}.cs2{font-size:12px;line-height:17px;margin-top:8px;opacity:.85}
+.btn-call{display:inline-block;border:1px solid var(--danger);color:var(--danger);background:#FBEDEC;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;text-decoration:none}
+.call{position:absolute;inset:0;background:var(--callbg);color:var(--callink);display:flex;flex-direction:column;z-index:5}
+.ctop{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 0;padding-top:calc(14px + env(safe-area-inset-top));font-size:13px;font-weight:600}
+.clink{border:0;background:transparent;color:var(--callsub);font-size:13px;cursor:pointer;padding:0}.clink.dk{color:var(--sub);font-size:14px}
+.cname{text-align:center;margin-top:8px;font-size:18px;font-weight:600}.cname span{display:block;font-size:12px;font-weight:400;color:var(--callsub)}
+.cstage{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center}
+.pav{width:86%;max-height:100%}.pav .r1,.pav .r2{fill:none;stroke:var(--accent);stroke-width:3;transform-origin:150px 130px}.pav .r1{stroke-opacity:.22}.pav .r2{stroke-opacity:0}
+.pav.speaking .r1{stroke-opacity:.55;animation:ring 1s ease-in-out infinite}.pav.speaking .r2{stroke-opacity:.3;animation:ring 1s ease-in-out .35s infinite}
+@keyframes ring{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
+.self{position:absolute;right:14px;top:8px;width:26%;aspect-ratio:3/4;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10px;color:var(--callsub);text-align:center}
+.cstat{text-align:center;font-size:12px;color:var(--callsub);padding:0 16px}
+.cap{font-size:14px;line-height:20px;background:rgba(0,0,0,.35);border-radius:12px;padding:8px 10px;max-height:132px;overflow-y:auto;margin-bottom:6px}.cap.you{background:rgba(255,255,255,.10)}.cap.warn{background:rgba(255,255,255,.12);font-size:12px;line-height:17px}
+.callin{background:rgba(255,255,255,.95);border:0;color:var(--callbg)}
+.cmid{padding:8px 14px 0;flex:0 1 auto;min-height:0;max-height:48%;overflow-y:auto}.cmid.crisismid{flex:1 1 auto;max-height:none;padding:10px 14px}
+.cbar{display:flex;justify-content:space-around;align-items:flex-end;padding:14px 10px calc(18px + env(safe-area-inset-bottom))}
+.cb{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--callsub)}
+.cbtn{width:50px;height:50px;border-radius:999px;border:0;cursor:pointer;background:var(--callink);color:var(--callbg);font-size:11px;font-weight:700}.cbtn.on{background:rgba(255,255,255,.18);color:var(--callink)}.cbtn.end{background:var(--danger);color:#fff}
+.vitem,.hbtn{display:block;width:100%;text-align:left;border:0;background:transparent;padding:10px 2px;cursor:pointer;color:var(--text)}
+.vitem{border-bottom:1px solid var(--border)}.hitem{border-bottom:1px solid var(--border);padding:4px 2px 10px}
+.vrow{display:flex;justify-content:space-between;gap:8px;font-size:14px}
+.sm{font-size:12px;line-height:17px;color:var(--sub)}.sm.dark{color:var(--text)}.ell{overflow:hidden;text-overflow:ellipsis}
+.bigv{font-size:18px;line-height:28px;font-style:italic}.bigv.en{font-size:16px;line-height:24px;margin-top:14px}
+.lbl{font-size:13px;font-weight:600;color:var(--sub);margin:16px 0 6px}.sec{font-size:15px;line-height:22px;color:var(--sub);margin-bottom:6px}
+.stack{display:flex;flex-direction:column;gap:8px}
+.prow{display:flex;align-items:center;gap:12px;margin-bottom:10px}.pname{font-size:17px;font-weight:600}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px}.ok{color:var(--ok);font-size:13px}.warnc{color:var(--warn);font-size:13px}
+.kpis{display:flex;gap:8px}.kpi{flex:1;border:1px solid var(--border);border-radius:12px;padding:8px 10px;background:#fff}.kpi b{display:block;font-size:20px}.kpi span{font-size:12px;color:var(--sub)}
+.barrow{display:flex;align-items:center;gap:8px;margin:4px 0}.bl2{width:38%;flex:0 0 auto}.bar{flex:1;height:8px;border-radius:4px;background:var(--surface)}.bar div{height:8px;border-radius:4px;background:var(--accent)}
+.quote{border-left:3px solid var(--border);padding:2px 0 2px 10px;margin:10px 0;font-size:14px;line-height:20px}
+.ob .obtop{padding:14px 16px 0;padding-top:calc(14px + env(safe-area-inset-top));min-height:32px}.obc{padding:8px 22px}.obf{padding:12px 22px calc(22px + env(safe-area-inset-bottom))}
+.intro{text-align:center;padding-top:16px}.intro svg{width:78%}.intro h2{font-size:24px;line-height:30px;margin:18px 0 0}.intro p{font-size:15px;line-height:22px;color:var(--sub);margin-top:10px}
+.dots{display:flex;justify-content:center;gap:6px;margin-bottom:14px}.dots span{width:7px;height:7px;border-radius:9px;background:var(--border)}.dots span.on{width:20px;background:var(--accent)}
+.h1{font-size:24px;line-height:30px;margin:4px 0 6px}
+.fl{display:block;font-size:12px;color:var(--sub);margin-top:14px}.fl .in{margin-top:4px}
+.err{font-size:13px;color:var(--danger);margin-top:8px}
+.steps{display:flex;gap:4px;margin-bottom:16px}.steps div{flex:1;height:4px;border-radius:2px;background:var(--surface)}.steps div.on{background:var(--accent)}
+.q{font-size:15px;margin:16px 0 8px}
+.stars{display:flex;gap:8px}.stars button{flex:1;height:44px;border-radius:12px;border:1px solid var(--border);background:#fff;color:var(--text);font-size:16px;font-weight:600;cursor:pointer}.stars button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.splash{height:100%;background:var(--accent);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;cursor:pointer;padding:24px;text-align:center}
+.st{font-size:28px;font-weight:700}.ss{font-size:15px;line-height:22px;opacity:.92}.sf{font-size:12px;opacity:.8;margin-top:30px}
+.toast{position:absolute;left:16px;right:16px;top:calc(14px + env(safe-area-inset-top));z-index:9;background:var(--text);color:var(--bg);border-radius:12px;padding:10px 12px;font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="phone"><div id="app"></div></div>
+  <aside id="info">
+    <h1>Fale com Paulo</h1>
+    <div>Protótipo para validação de um conselheiro bíblico virtual, por texto, áudio e videochamada. No celular, o app abre em tela cheia; dá para adicionar à tela inicial.</div>
+    <h2>Como testar</h2>
+    <ul>
+      <li><b>Texto:</b> chat com indicador de digitação, temas prontos, “Explicar contexto” e “Outro versículo”.</li>
+      <li><b>Áudio:</b> toque no microfone para falar (reconhecimento de voz do navegador, pt-BR); Paulo responde com mensagem de voz.</li>
+      <li><b>Videochamada:</b> avatar de Paulo com legendas, microfone, teclado e encerrar.</li>
+      <li>O microfone só funciona com o app aberto por <b>https</b> ou localhost (Chrome, Edge, Safari). Aberto como arquivo, o app avisa e a conversa segue por texto.</li>
+    </ul>
+    <h2>Transparência</h2>
+    <div>Paulo é apresentado como conselheiro de IA, mas aqui as respostas vêm de regras fixas e de uma base de 59 versículos conferidos. Não é Jesus, Deus nem o apóstolo Paulo, e não substitui pastor, padre, terapeuta ou serviço de emergência. Em crise: 988 (EUA, ligação ou texto), 911, CVV 188 e 190 no Brasil. Acesso de teste só com nome e e-mail, sem senha; perfil, histórico e avaliações ficam neste navegador.</div>
+    <h2>Fontes dos textos</h2>
+    <ul>
+      <li>Almeida, edição revista e corrigida, Lisboa 1911 — domínio público nos EUA (<a href="https://www.gutenberg.org/ebooks/62383" target="_blank" rel="noopener">Project Gutenberg nº 62383</a>), ortografia original.</li>
+      <li>World English Bible — domínio público (<a href="https://ebible.org/eng-web/copyright.htm" target="_blank" rel="noopener">eBible.org</a>), sem alterações.</li>
+      <li>Contextos e perguntas: texto próprio do protótipo, não é texto bíblico.</li>
+      <li>Apoio em crise: <a href="https://988lifeline.org" target="_blank" rel="noopener">988lifeline.org</a> · <a href="https://cvv.org.br" target="_blank" rel="noopener">cvv.org.br</a></li>
+    </ul>
+  </aside>
+</div>
+<script>
+const VERSES = [
+["Fp 4:6", "ansiedade", "De nada estejaes solicitos: antes as vossas petições sejam em tudo conhecidas diante de Deus pela oração e supplicas com acção de graças.", "In nothing be anxious, but in everything, by prayer and petition with thanksgiving, let your requests be made known to God.", "Paulo escreve da prisão e, mesmo assim, troca a preocupação pela oração com gratidão."],
+["Fp 4:7", "ansiedade", "E a paz de Deus, que excede todo o entendimento, guardará os vossos corações e os vossos sentimentos em Christo Jesus.", "And the peace of God, which surpasses all understanding, will guard your hearts and your thoughts in Christ Jesus.", "A palavra traduzida como “guardará” era usada para uma guarnição militar que protege uma cidade; Filipos era colônia romana com soldados."],
+["Mt 6:34", "ansiedade", "Não vos inquieteis pois pelo dia d’ámanhã, porque o dia d’ámanhã cuidará de si mesmo. Basta a cada dia o seu mal.", "Therefore don’t be anxious for tomorrow, for tomorrow will be anxious for itself. Each day’s own evil is sufficient.", "Fecha a parte do Sermão do Monte sobre a preocupação com comida, roupa e o dia seguinte."],
+["1Pe 5:7", "ansiedade", "Lançando sobre elle toda a vossa solicitude, porque elle tem cuidado de vós.", "casting all your worries on him, because he cares for you.", "Eco do Salmo 55:22, dirigido a cristãos que sofriam hostilidade e pressão social."],
+["Sl 55:22", "ansiedade", "Lança a tua carga sobre o Senhor, e elle te susterá: não permittirá nunca que o justo seja abalado.", "Cast your burden on the LORD and he will sustain you. He will never allow the righteous to be moved.", "Salmo de lamento de alguém traído por um amigo próximo, que entrega o peso a Deus."],
+["Is 41:10", "ansiedade", "Não temas, porque eu estou comtigo; não te assombres, porque eu sou teu Deus: eu te esforço, e te ajudo, e te sustento com a dextra da minha justiça.", "Don’t you be afraid, for I am with you. Don’t be dismayed, for I am your God. I will strengthen you. Yes, I will help you. Yes, I will uphold you with the right hand of my righteousness.", "Palavra de consolo a um povo exilado, com medo de ter sido esquecido."],
+["Jo 14:27", "ansiedade", "Deixo-vos a paz, a minha paz vos dou: não vol-a dou como o mundo a dá. Não se turbe o vosso coração, nem se atemorize.", "Peace I leave with you. My peace I give to you; not as the world gives, I give to you. Don’t let your heart be troubled, neither let it be fearful.", "Dito por Jesus na última ceia, horas antes da prisão, para preparar os discípulos para a despedida."],
+["Mt 11:28", "ansiedade", "Vinde a mim, todos os que estaes cançados e opprimidos, e eu vos alliviarei.", "“Come to me, all you who labor and are heavily burdened, and I will give you rest.", "Convite dirigido a quem estava sobrecarregado por exigências religiosas e pelo cansaço da vida."],
+["Sl 34:18", "luto", "Perto está o Senhor dos que teem o coração quebrantado, e salva os contritos de espirito.", "The LORD is near to those who have a broken heart, and saves those who have a crushed spirit.", "Salmo atribuído a Davi num momento de fuga e perigo; afirma a proximidade de Deus com quem está quebrado."],
+["Mt 5:4", "luto", "Bemaventurados os que choram, porque elles serão consolados;", "Blessed are those who mourn, for they shall be comforted.", "Uma das bem-aventuranças, no início do Sermão do Monte: o choro não é desprezado, é visto."],
+["Ap 21:4", "luto", "E Deus alimpará de seus olhos toda a lagrima; e não haverá mais morte, nem pranto, nem clamor, nem dôr; porque já as primeiras coisas são passadas.", "He will wipe away every tear from their eyes. Death will be no more; neither will there be mourning, nor crying, nor pain any more. The first things have passed away.”", "Parte da visão final do livro, de novo céu e nova terra, escrita para igrejas que sofriam perseguição."],
+["Jo 11:25", "luto", "Disse-lhe Jesus: Eu sou a resurreição e a vida; quem crê em mim, ainda que esteja morto, viverá;", "Jesus said to her, “I am the resurrection and the life. He who believes in me will still live, even if he dies.", "Dito a Marta, que tinha acabado de perder o irmão Lázaro; logo depois o texto diz que Jesus chorou (v. 35)."],
+["1Ts 4:13", "luto", "Não quero, porém, irmãos, que sejaes ignorantes ácerca dos que já dormem, para que vos não entristeçaes, como tambem os demais, que não teem esperança.", "But we don’t want you to be ignorant, brothers, concerning those who have fallen asleep, so that you don’t grieve like the rest, who have no hope.", "Paulo responde a uma igreja jovem, aflita com a morte de seus membros: o luto existe, mas com esperança."],
+["Sl 23:4", "luto", "Ainda que eu andasse pelo valle da sombra da morte, não temeria mal algum, porque tu estás comigo; a tua vara e o teu cajado me consolam.", "Even though I walk through the valley of the shadow of death, I will fear no evil, for you are with me. Your rod and your staff, they comfort me.", "O salmo do pastor: no trecho mais escuro do vale, a fala passa de “ele” para “tu”, como quem conversa de perto."],
+["2Co 1:3", "luto", "Bemdito seja o Deus e Pae de nosso Senhor Jesus Christo, o Pae das misericordias e o Deus de toda a consolação;", "Blessed be the God and Father of our Lord Jesus Christ, the Father of mercies and God of all comfort,", "Abertura de uma carta escrita depois de grande sofrimento; a consolação recebida é para ser repassada (v. 4)."],
+["Ec 3:4", "luto", "Tempo de chorar, e tempo de rir: tempo de prantear, e tempo de saltar:", "a time to weep, and a time to laugh; a time to mourn, and a time to dance;", "Do poema “tudo tem o seu tempo”: o luto tem lugar legítimo na vida."],
+["Sl 147:3", "luto", "Sara os quebrantados de coração, e lhes ata as suas feridas.", "He heals the broken in heart, and binds up their wounds.", "Hino de louvor do período depois do exílio, quando Jerusalém estava sendo reconstruída."],
+["Ef 4:2", "familia", "Com toda a humildade e mansidão, com longanimidade, supportando-vos uns aos outros em amor,", "with all lowliness and humility, with patience, bearing with one another in love,", "Abre a parte prática da carta: a unidade se constrói com humildade e paciência no dia a dia."],
+["1Co 13:4", "familia", "A caridade é soffredora, é benigna: a caridade não é invejosa: a caridade não trata com leviandade, não se ensoberbece,", "Love is patient and is kind. Love doesn’t envy. Love doesn’t brag, is not proud,", "O “capítulo do amor” foi escrito a uma igreja dividida por orgulho e disputas, não para cerimônias de casamento."],
+["1Co 13:7", "familia", "Tudo soffre, tudo crê, tudo espera, tudo supporta.", "bears all things, believes all things, hopes all things, and endures all things.", "Fecha a lista do que o amor faz; “caridade”, na Almeida antiga, traduz o grego agápe, amor que se doa."],
+["Rt 1:16", "familia", "Disse porém Ruth: Não me instes para que te deixe, e me torne de detraz de ti; porque aonde quer que tu fores irei eu, e onde quer que pousares á noite ali pousarei eu; o teu povo é o meu povo, o teu Deus é o meu Deus;", "Ruth said, “Don’t urge me to leave you, and to return from following you, for where you go, I will go; and where you stay, I will stay. Your people will be my people, and your God my God.", "Rute, viúva e estrangeira, escolhe ficar com a sogra Noemi, também viúva; lealdade em meio à perda."],
+["Js 24:15", "familia", "Porém, se vos parece mal aos vossos olhos servir ao Senhor, escolhei-vos hoje a quem sirvaes: se os deuses a quem serviram vossos paes, que estavam d’além do rio, ou os deuses dos amorrheos, em cuja terra habitaes: porém eu e a minha casa serviremos ao Senhor.", "If it seems evil to you to serve the LORD, choose today whom you will serve; whether the gods which your fathers served that were beyond the River, or the gods of the Amorites, in whose land you dwell; but as for me and my house, we will serve the LORD.”", "Discurso de despedida de Josué em Siquém: uma escolha pessoal que envolve toda a casa."],
+["Pv 15:1", "familia", "A resposta branda desvia o furor, mas a palavra de dôr suscita a ira.", "A gentle answer turns away wrath, but a harsh word stirs up anger.", "Provérbio sobre a força das palavras: o tom da resposta muda o rumo de uma discussão."],
+["Ec 4:9", "familia", "Melhores são dois do que um, porque teem melhor paga do seu trabalho.", "Two are better than one, because they have a good reward for their labor.", "Reflexão sobre a solidão e o valor de ter alguém ao lado; segue com “se um cair, o outro levanta” (v. 10)."],
+["Cl 3:14", "familia", "E, sobre tudo isto, revesti-vos de caridade, que é o vinculo da perfeição.", "Above all these things, walk in love, which is the bond of perfection.", "Depois de listar atitudes como paciência e perdão, Paulo diz que o amor é o que amarra todas elas."],
+["Jr 29:11", "proposito", "Porque eu bem sei os pensamentos que eu penso de vós, diz o Senhor; pensamentos de paz, e não de mal, para vos dar o fim que esperaes.", "For I know the thoughts that I think toward you,” says the LORD, “thoughts of peace, and not of evil, to give you hope and a future.", "Da carta de Jeremias aos exilados na Babilônia: a promessa veio junto com a ordem de construir casas e plantar onde estavam, por setenta anos."],
+["Rm 8:28", "proposito", "E sabemos que todas as coisas contribuem juntamente para o bem d’aquelles que amam a Deus, d’aquelles que são chamados por seu decreto.", "We know that all things work together for good for those who love God, for those who are called according to his purpose.", "Dentro de um capítulo que fala abertamente de sofrimento e gemido; não promete que tudo é bom, mas que nada fica fora do cuidado de Deus."],
+["Ef 2:10", "proposito", "Porque somos feitura sua, creados em Christo Jesus para as boas obras, as quaes Deus preparou para que andassemos n’ellas.", "For we are his workmanship, created in Christ Jesus for good works, which God prepared before that we would walk in them.", "A palavra grega para “feitura” (poiema) sugere obra de artesão; vem logo depois de dizer que a salvação é pela graça."],
+["Pv 3:5", "proposito", "Confia no Senhor com todo o teu coração, e não te estribes no teu proprio entendimento.", "Trust in the LORD with all your heart, and don’t lean on your own understanding.", "Parte dos conselhos de um pai ao filho no início de Provérbios."],
+["Pv 3:6", "proposito", "Reconhece-o em todos os teus caminhos, e elle endireitará as tuas veredas.", "In all your ways acknowledge him, and he will make your paths straight.", "Completa o versículo anterior: confiar não é deixar de pensar, é reconhecer Deus em cada caminho."],
+["Ec 3:1", "proposito", "Tudo tem o seu tempo determinado, e todo o proposito debaixo do céu tem o seu tempo:", "For everything there is a season, and a time for every purpose under heaven:", "Abre o poema dos tempos: há estações diferentes para a mesma vida."],
+["Rm 12:2", "proposito", "E não vos conformeis com este mundo, mas transformae-vos pela renovação do vosso entendimento, para que experimenteis qual seja a boa, agradavel, e perfeita vontade de Deus.", "Don’t be conformed to this world, but be transformed by the renewing of your mind, so that you may prove what is the good, well-pleasing, and perfect will of God.", "Começa a parte prática de Romanos: a mudança vem de dentro, pela renovação da mente."],
+["Cl 3:13", "perdao", "Supportando-vos uns aos outros, e perdoando-vos uns aos outros, se algum tiver queixa contra outro: assim como Christo vos perdoou, assim o fazei vós tambem.", "bearing with one another, and forgiving each other, if any man has a complaint against any; even as Christ forgave you, so you also do.", "O perdão aparece como prática mútua e contínua, com base no perdão recebido."],
+["Ef 4:32", "perdao", "Antes sêde uns para com os outros benignos, misericordiosos, perdoando-vos uns aos outros, como tambem Deus vos perdoou em Christo.", "And be kind to one another, tender hearted, forgiving each other, just as God also in Christ forgave you.", "Encerra uma lista sobre amargura e ira; perdoar é apresentado como resposta ao perdão de Deus."],
+["Mt 6:14", "perdao", "Porque, se perdoardes aos homens as suas offensas, tambem vosso Pae celestial vos perdoará a vós;", "“For if you forgive men their trespasses, your heavenly Father will also forgive you.", "Comentário de Jesus logo depois do Pai-Nosso, retomando o pedido sobre perdão."],
+["Mt 18:22", "perdao", "Jesus lhe disse: Não te digo: Até sete, mas, até setenta vezes sete.", "Jesus said to him, “I don’t tell you until seven times, but, until seventy times seven.", "Resposta à pergunta de Pedro sobre quantas vezes perdoar; em seguida vem a parábola do servo que não perdoou."],
+["1Jo 1:9", "perdao", "Se confessarmos os nossos peccados, elle é fiel e justo, para nos perdoar os peccados, e purificar-nos de toda a injustiça.", "If we confess our sins, he is faithful and righteous to forgive us the sins and to cleanse us from all unrighteousness.", "Carta pastoral: reconhecer a falha abre espaço para o perdão e a restauração."],
+["Sl 103:12", "perdao", "Assim como está longe o oriente do occidente, assim affasta de nós as nossas transgressões.", "As far as the east is from the west, so far has he removed our transgressions from us.", "Imagem de distância sem medida: o oriente e o ocidente nunca se encontram."],
+["Lc 15:20", "perdao", "E, levantando-se, foi para seu pae; e, quando ainda estava longe, viu-o seu pae, e se moveu de intima compaixão, e, correndo, lançou-se-lhe ao pescoço e o beijou.", "“He arose and came to his father. But while he was still far off, his father saw him and was moved with compassion, and ran, fell on his neck, and kissed him.", "Da parábola do filho pródigo: o pai corre ao encontro do filho, gesto incomum para um patriarca da época."],
+["1Ts 5:18", "gratidao", "Em tudo dae graças; porque esta é a vontade de Deus em Christo Jesus para comvosco.", "In everything give thanks, for this is the will of God in Christ Jesus toward you.", "Dirigido a uma igreja perseguida: agradecer em tudo, não necessariamente por tudo."],
+["Sl 100:4", "gratidao", "Entrae pelas portas d’elle com louvor, e em seus atrios com hymno: louvae-o, e bemdizei o seu nome.", "Enter into his gates with thanksgiving, and into his courts with praise. Give thanks to him, and bless his name.", "Salmo cantado na entrada do templo, quando o povo chegava para o culto."],
+["Sl 118:24", "gratidao", "Este é o dia que fez o Senhor: regozijemo-nos, e alegremo-nos n’elle.", "This is the day that the LORD has made. We will rejoice and be glad in it!", "Parte de um salmo de vitória usado nas festas de peregrinação de Israel."],
+["Cl 3:15", "gratidao", "E a paz de Deus domine em vossos corações para a qual tambem fostes chamados em um corpo, e sêde agradecidos.", "And let the peace of God rule in your hearts, to which also you were called in one body, and be thankful.", "A gratidão aparece ligada à paz e à vida em comunidade."],
+["Sl 103:2", "gratidao", "Bemdize, ó alma minha, ao Senhor, e não te esqueças de nenhum de seus beneficios.", "Praise the LORD, my soul, and don’t forget all his benefits,", "Davi fala com a própria alma, lembrando-a de não esquecer o bem recebido."],
+["Tg 1:17", "gratidao", "Toda a boa dadiva e todo o dom perfeito é do alto, e desce do Pae das luzes, em quem não ha mudança nem sombra de variação,", "Every good gift and every perfect gift is from above, coming down from the Father of lights, with whom can be no variation nor turning shadow.", "Tiago insiste que o bem vem de Deus, que não muda, num capítulo sobre provações."],
+["Mc 9:24", "fe", "E logo o pae do menino, clamando com lagrimas, disse: Eu creio, Senhor! ajuda a minha incredulidade.", "Immediately the father of the child cried out with tears, “I believe. Help my unbelief!”", "Um pai desesperado pelo filho doente admite crer e duvidar ao mesmo tempo, e é atendido."],
+["Hb 11:1", "fe", "Ora, a fé é o firme fundamento das coisas que se esperam, e a prova das coisas que se não vêem.", "Now faith is assurance of things hoped for, proof of things not seen.", "Abre o capítulo dos exemplos de fé, escrito a cristãos cansados e tentados a desistir."],
+["Tg 1:5", "fe", "E, se algum de vós tem falta de sabedoria, peça-a a Deus, que a todos dá liberalmente, e o não lança em rosto, e ser-lhe-ha dada.", "But if any of you lacks wisdom, let him ask of God, who gives to all liberally and without reproach, and it will be given to him.", "Convite a pedir sabedoria sem medo de ser repreendido, num contexto de provações."],
+["Jo 20:29", "fe", "Disse-lhe Jesus: Porque me viste, Thomé, creste; bemaventurados os que não viram, e creram.", "Jesus said to him, “Because you have seen me, you have believed. Blessed are those who have not seen and have believed.”", "Dito a Tomé, que tinha duvidado da ressurreição; ele não é rejeitado pela dúvida."],
+["Sl 13:1", "fe", "Até quando te esquecerás de mim, Senhor? para sempre? até quando esconderás de mim o teu rosto?", "For the Chief Musician. A Psalm by David. How long, LORD? Will you forget me forever? How long will you hide your face from me?", "Um lamento sincero: o salmista reclama do silêncio de Deus e termina, no v. 5, confiando."],
+["Rm 10:17", "fe", "De sorte que a fé é pelo ouvir, e o ouvir pela palavra de Deus.", "So faith comes by hearing, and hearing by the word of God.", "A fé nasce de ouvir a mensagem, por isso Paulo valoriza a pregação e a leitura."],
+["Jo 3:16", "fe", "Porque Deus amou o mundo de tal maneira, que deu o seu Filho unigenito, para que todo aquelle que n’elle crê não pereça, mas tenha a vida eterna.", "For God so loved the world, that he gave his only born Son, that whoever believes in him should not perish, but have eternal life.", "Parte da conversa noturna de Jesus com Nicodemos, um mestre religioso cheio de perguntas."],
+["Cl 3:23", "trabalho", "E, tudo quanto fizerdes, fazei-o do coração, como ao Senhor, e não aos homens:", "And whatever you do, work heartily, as for the Lord and not for men,", "Dito originalmente a servos domésticos: o trabalho comum ganha dignidade quando feito “como ao Senhor”."],
+["Pv 16:3", "trabalho", "Confia do Senhor as tuas obras, e teus pensamentos serão estabelecidos.", "Commit your deeds to the LORD, and your plans shall succeed.", "Provérbio sobre planejamento: entregar os planos não dispensa fazê-los."],
+["Mt 6:33", "trabalho", "Mas buscae primeiro o reino de Deus, e a sua justiça, e todas estas coisas vos serão accrescentadas.", "But seek first God’s Kingdom and his righteousness; and all these things will be given to you as well.", "Fecha o ensino sobre preocupação com o sustento no Sermão do Monte: uma questão de prioridade."],
+["Fp 4:13", "trabalho", "Posso todas as coisas n’aquelle que me fortalece.", "I can do all things through Christ who strengthens me.", "No contexto, Paulo fala de ter aprendido a viver com pouco e com muito (vv. 11 e 12); é sobre contentamento, não sobre vencer qualquer desafio."],
+["Hb 13:5", "trabalho", "Sejam os vossos costumes sem avareza, contentando-vos com o presente; porque elle disse: Não te deixarei, nem te desampararei.", "Be free from the love of money, content with such things as you have, for he has said, “I will in no way leave you, neither will I in any way forsake you.”", "Liga o desapego do dinheiro à promessa de presença, citando Deuteronômio 31:6."],
+["Mt 6:26", "trabalho", "Olhae para as aves do céu, que nem semeiam, nem segam, nem ajuntam em celleiros; e vosso Pae celestial as alimenta. Não tendes vós muito mais valor do que ellas?", "See the birds of the sky, that they don’t sow, neither do they reap, nor gather into barns. Your heavenly Father feeds them. Aren’t you of much more value than they?", "Jesus usa as aves como imagem de cuidado, para quem se preocupava com o sustento diário."],
+["Fp 4:11", "trabalho", "Não o digo como por necessidade, porque já aprendi a contentar-me com o que tenho.", "Not that I speak because of lack, for I have learned in whatever state I am, to be content in it.", "Paulo agradece uma oferta da igreja, mas diz que aprendeu a se contentar em qualquer situação."],
+];
+
+const VERSE_MAP = {};
+VERSES.forEach((v) => {
+  VERSE_MAP[v[0]] = v;
+});
+
+const BOOKS = {
+  Js: { nome: "Josué", ctx: "Relato da entrada de Israel em Canaã; termina com a despedida de Josué e a renovação da aliança.", alias: ["josue", "js"] },
+  Rt: { nome: "Rute", ctx: "Narrativa do tempo dos juízes sobre uma estrangeira fiel, que se torna bisavó do rei Davi.", alias: ["rute", "rt", "ruth"] },
+  Sl: { nome: "Salmos", ctx: "Coletânea de cânticos e orações de Israel, compostos ao longo de séculos e usados no culto; poesia hebraica que repete ideias em versos paralelos.", alias: ["salmo", "salmos", "sl", "psalmo", "psalmos"] },
+  Pv: { nome: "Provérbios", ctx: "Coletânea de ditos de sabedoria, em boa parte atribuídos a Salomão, para formar o caráter no dia a dia.", alias: ["proverbios", "pv", "prov"] },
+  Ec: { nome: "Eclesiastes", ctx: "Reflexão do Pregador sobre o sentido da vida “debaixo do sol”; livro de sabedoria que encara de frente a fragilidade humana.", alias: ["eclesiastes", "ec", "ecl"] },
+  Is: { nome: "Isaías", ctx: "Profeta de Jerusalém no século VIII a.C.; a partir do capítulo 40, o livro consola o povo exilado na Babilônia.", alias: ["isaias", "is"] },
+  Jr: { nome: "Jeremias", ctx: "Profeta que atuou antes e durante a queda de Jerusalém, em 587 a.C.; o capítulo 29 é uma carta aos exilados.", alias: ["jeremias", "jr", "jer"] },
+  Mt: { nome: "Mateus", ctx: "Evangelho escrito para leitores de formação judaica; organiza os ensinos de Jesus em grandes discursos, como o Sermão do Monte (capítulos 5 a 7).", alias: ["mateus", "mt"] },
+  Mc: { nome: "Marcos", ctx: "O evangelho mais curto e, para a maioria dos estudiosos, o mais antigo; narrativa rápida, centrada nas ações de Jesus.", alias: ["marcos", "mc"] },
+  Lc: { nome: "Lucas", ctx: "Evangelho escrito por Lucas, companheiro de viagem de Paulo, com atenção especial aos pobres e aos excluídos; o capítulo 15 reúne parábolas sobre o que estava perdido.", alias: ["lucas", "lc"] },
+  Jo: { nome: "João", ctx: "Quarto evangelho, de estilo reflexivo, construído em torno de sinais e de longos diálogos de Jesus.", alias: ["joao", "jo"] },
+  Rm: { nome: "Romanos", ctx: "Carta de Paulo, por volta do ano 57, a uma igreja que ele ainda não conhecia em Roma; a exposição mais completa da sua fé.", alias: ["romanos", "rm"] },
+  "1Co": { nome: "1 Coríntios", ctx: "Carta de Paulo a uma igreja dividida em Corinto, cidade portuária grega, cheia de disputas sobre líderes e dons.", alias: ["1corintios", "1co", "1cor"] },
+  "2Co": { nome: "2 Coríntios", ctx: "Carta pessoal de Paulo, escrita depois de grande sofrimento e de conflitos com a igreja de Corinto.", alias: ["2corintios", "2co", "2cor"] },
+  Ef: { nome: "Efésios", ctx: "Carta sobre a unidade da igreja; a segunda metade aplica a fé à vida em comunidade e em casa.", alias: ["efesios", "ef"] },
+  Fp: { nome: "Filipenses", ctx: "Carta de Paulo, escrita da prisão, à igreja de Filipos, na Macedônia; marcada pela alegria apesar das circunstâncias.", alias: ["filipenses", "fp", "fl", "flp"] },
+  Cl: { nome: "Colossenses", ctx: "Carta à igreja de Colossos, na Ásia Menor; o capítulo 3 descreve a vida nova em comunidade.", alias: ["colossenses", "cl", "col"] },
+  "1Ts": { nome: "1 Tessalonicenses", ctx: "Provavelmente a carta mais antiga de Paulo, por volta do ano 50, a uma igreja jovem e perseguida.", alias: ["1tessalonicenses", "1ts"] },
+  Hb: { nome: "Hebreus", ctx: "Sermão em forma de carta, de autor desconhecido, para cristãos cansados e tentados a desistir.", alias: ["hebreus", "hb"] },
+  Tg: { nome: "Tiago", ctx: "Carta atribuída a Tiago, irmão de Jesus, de tom prático, parecida com os livros de sabedoria.", alias: ["tiago", "tg"] },
+  "1Pe": { nome: "1 Pedro", ctx: "Carta atribuída a Pedro, para cristãos espalhados pela Ásia Menor que sofriam hostilidade.", alias: ["1pedro", "1pe", "1pd"] },
+  "1Jo": { nome: "1 João", ctx: "Carta pastoral, no estilo do evangelho de João, sobre luz, verdade e amor.", alias: ["1joao", "1jo"] },
+  Ap: { nome: "Apocalipse", ctx: "Livro profético e simbólico, escrito no fim do século I a igrejas perseguidas da Ásia Menor; termina com a visão de novo céu e nova terra.", alias: ["apocalipse", "ap"] },
+};
+
+const TOPICS = [
+  { id: "ansiedade", nome: "Ansiedade", label: "ansiedade", chip: "Estou ansioso", kws: ["ansie", "ansios", "preocup", "medo", "panico", "nervos", "angusti", "insonia", "nao consigo dormir", "estress", "inquiet", "aflit", "apreensiv", "sufoc"] },
+  { id: "luto", nome: "Luto", label: "luto e perda", chip: "Perdi alguém", kws: ["luto", "perdi", "morreu", "morte", "faleceu", "falec", "saudade", "enterro", "velorio", "partiu", "viuv", "choro", "chorar"] },
+  { id: "familia", nome: "Casamento e família", label: "casamento e família", chip: "Brigas em casa", kws: ["casament", "marido", "esposa", "minha mulher", "filho", "filha", "familia", "briga", "discut", "divorc", "separa", "minha mae", "meu pai", "sogr", "relacionament", "namor", "conjuge", "casa"] },
+  { id: "proposito", nome: "Propósito", label: "propósito", chip: "Qual é o meu propósito?", kws: ["proposit", "sentido", "direcao", "vocac", "perdido", "perdida", "rumo", "futuro", "decis", "decidir", "chamado", "missao", "o que fazer"] },
+  { id: "perdao", nome: "Perdão", label: "perdão", chip: "Não consigo perdoar", kws: ["perdo", "perdao", "magoa", "magoad", "ressentid", "ressentiment", "raiva", "traic", "traiu", "traid", "culpa", "arrepend", "ofend", "rancor", "injustic"] },
+  { id: "gratidao", nome: "Gratidão", label: "gratidão", chip: "Quero agradecer", kws: ["gratid", "grato", "grata", "agradec", "feliz", "alegr", "bencao", "abencoad", "celebr", "louv", "conquist"] },
+  { id: "fe", nome: "Dúvida e fé", label: "dúvida e fé", chip: "Tenho dúvidas na fé", kws: ["duvid", "fe=", "acreditar", "acredito", "creio", "crer=", "deus existe", "onde esta deus", "silencio de deus", "incredul", "orar", "oracao", "rezar", "igreja", "biblia"] },
+  { id: "trabalho", nome: "Trabalho e finanças", label: "trabalho e finanças", chip: "Pressão no trabalho", kws: ["trabalh", "emprego", "desempreg", "demiss", "demitid", "chefe", "dinheiro", "divida", "financ", "salario", "contas", "negocio", "empresa", "carreira", "pagar"] },
+];
+
+const TOPIC_BY_ID = {
+  ansiedade: TOPICS[0], luto: TOPICS[1], familia: TOPICS[2], proposito: TOPICS[3],
+  perdao: TOPICS[4], gratidao: TOPICS[5], fe: TOPICS[6], trabalho: TOPICS[7],
+};
+
+const EMPATHY = {
+  ansiedade: "Ansiedade cansa o corpo e a mente, e não é sinal de fé fraca.",
+  luto: "Sinto muito pela sua perda. O luto não tem prazo, e a saudade é uma forma de amor.",
+  familia: "Conflitos em casa doem justamente porque envolvem quem mais importa.",
+  proposito: "Sentir-se sem rumo aparece em muitas histórias da Bíblia; não é fracasso.",
+  perdao: "Perdoar não é fingir que não doeu, e às vezes leva tempo.",
+  gratidao: "Que bom que você quer agradecer; isso também merece espaço na conversa.",
+  fe: "Dúvidas não assustam a Escritura: muitos personagens dela perguntaram, reclamaram e continuaram buscando.",
+  trabalho: "Pressão com trabalho e dinheiro mexe com a segurança e com o sono.",
+};
+
+const QUESTIONS = {
+  ansiedade: ["O que você está tentando controlar hoje que não depende só de você?", "Se você entregasse uma única preocupação em oração agora, qual seria?", "O que ajudaria você a viver só o dia de hoje?"],
+  luto: ["Que lembrança dessa pessoa você gostaria de guardar com carinho?", "Quem pode ficar ao seu lado nestes dias, para você não carregar isso sozinho?", "O que você gostaria de dizer a Deus sobre essa perda, mesmo que seja uma pergunta?"],
+  familia: ["Qual seria uma resposta branda possível na próxima conversa difícil?", "O que a outra pessoa talvez esteja sentindo e ainda não conseguiu dizer?", "Que pequeno gesto de paciência caberia nesta semana?"],
+  proposito: ["Em que momentos você se sente mais útil para os outros?", "Qual é o próximo passo pequeno e fiel, mesmo sem ver o caminho inteiro?", "Que estação da vida você acha que está vivendo agora?"],
+  perdao: ["O que perdoar significaria para você, e o que não significaria?", "Existe algo que você precisa entregar antes de conseguir conversar com essa pessoa?", "Você também precisa se perdoar por alguma coisa?"],
+  gratidao: ["Quais três coisas de hoje você não quer esquecer?", "A quem você gostaria de agradecer pessoalmente esta semana?", "Como a gratidão muda o jeito de olhar para o que ainda falta?"],
+  fe: ["Qual pergunta sobre fé você tem receio de fazer em voz alta?", "Em que momento da sua história você já sentiu Deus por perto?", "O que ajudaria você a buscar respostas sem pressa: leitura, conversa ou silêncio?"],
+  trabalho: ["O que está no seu controle nesta semana, e o que não está?", "Como seria trabalhar de coração sem se esgotar?", "O que é suficiente para você neste momento?"],
+};
+
+const CRISIS = [
+  "suicid", "me matar", "matar me", "me mato", "tirar minha vida", "tirar a minha vida", "acabar com a minha vida", "acabar com minha vida",
+  "nao quero mais viver", "quero morrer", "vontade de morrer", "me cortar", "me corto", "automutil", "autolesao", "auto lesao",
+  "me machucar", "me ferir", "abusad", "abuso", "estupr", "violencia domestica", "ele me bate", "ela me bate", "me bateu",
+  "me espanca", "me agride", "agredid", "apanho d", "apanhei d", "kill myself", "suicide", "self harm", "overdose",
+];
+
+// ================= Fale com Paulo — app (vanilla JS) =================
+const PAY = ["Não pagaria", "US$ 4,99/mês", "US$ 9,99/mês", "US$ 14,99/mês", "US$ 19,99/mês"];
+const STORE = "falecompaulo-app-v3";
+const TRANS_LABEL = { pt: "Almeida, Lisboa 1911", en: "World English Bible" };
+const MODE_LABEL = { texto: "Texto", audio: "Áudio", video: "Vídeo" };
+const TRAD_LABEL = { catolica: "Católica", evangelica: "Evangélica", outra: "Outra", nao: "Prefiro não dizer" };
+const IS_FILE = location.protocol === "file:";
+
+function norm(s) { return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[-\u2010]/g, " "); }
+function hit(n, kw) {
+  if (kw.endsWith("=")) return new RegExp("(^|[^a-z])" + kw.slice(0, -1) + "([^a-z]|$)").test(n);
+  if (kw.includes(" ")) return n.includes(kw);
+  return new RegExp("(^|[^a-z])" + kw).test(n);
+}
+function detect(n, prefer) {
+  let best = null, bs = 0;
+  TOPICS.forEach((t) => {
+    const c = t.kws.filter((k) => hit(n, k)).length;
+    const s = c > 0 ? c + (prefer.includes(t.id) ? 0.5 : 0) : 0;
+    if (s > bs) { bs = s; best = t.id; }
+  });
+  return best;
+}
+function isCrisis(n) { return CRISIS.some((k) => n.includes(k)); }
+function fullRef(r) { const [b, cv] = r.split(" "); return (BOOKS[b] ? BOOKS[b].nome : b) + " " + cv; }
+function bookOf(r) { return r.split(" ")[0]; }
+function parseRef(n) {
+  const m = n.trim().match(/^([1-3]?\s*[a-z]+)\.?\s*(\d{1,3})\s*[:.,\s]\s*(\d{1,3})$/);
+  if (!m) return undefined;
+  const tok = m[1].replace(/\s+/g, "");
+  const b = Object.keys(BOOKS).find((k) => BOOKS[k].alias.includes(tok));
+  if (!b) return null;
+  const key = b + " " + Number(m[2]) + ":" + Number(m[3]);
+  return VERSE_MAP[key] ? key : null;
+}
+function mmss(s) { const m = Math.floor(s / 60), r = Math.floor(s % 60); return m + ":" + (r < 10 ? "0" : "") + r; }
+function initials(nome) {
+  const p = nome.trim().split(/\s+/).filter((x) => x.length > 0);
+  if (!p.length) return "?";
+  return (p[0][0] + (p.length > 1 ? p[p.length - 1][0] : "")).toUpperCase();
+}
+function estSecs(text) { return Math.max(2, text.split(/\s+/).length / 2.6); }
+function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
+
+// ---------------- estado ----------------
+const S = {
+  screen: "splash", introIdx: 0, step: 0, tab: "conversar", mode: "texto", inCall: false,
+  nome: "", email: "", accErr: "", trad: "", temas: [], tom: "acolhedor", trans: "pt",
+  entries: [], draft: "", typing: false, shown: [], lastRef: null, lastTopic: null, crisis: false, modesUsed: [],
+  callSecs: 0, cam: true, captions: true, caption: "", callType: false,
+  listening: false, interim: "", srMsg: "", recStart: 0,
+  playingId: null, playStart: 0, playDur: 1, openText: [],
+  caps: { sr: false, tts: false },
+  vq: "", vTopic: "todos", vSel: null, sessOpen: null,
+  nota: 0, paga: "", coment: "", fbErr: "", toast: "",
+  respostas: [], sessoes: [],
+};
+let idSeq = 1, qCount = 0, firstCounsel = true, recObj = null, playTimer = null, toastTimer = null, lastScrollKey = "";
+
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(STORE) || "null");
+    if (s) ["nome", "email", "trad", "temas", "tom", "trans", "respostas", "sessoes"].forEach((k) => { if (s[k] !== undefined) S[k] = s[k]; });
+  } catch (e) { /* sem armazenamento */ }
+}
+function save() {
+  try {
+    localStorage.setItem(STORE, JSON.stringify({ nome: S.nome, email: S.email, trad: S.trad, temas: S.temas, tom: S.tom, trans: S.trans, respostas: S.respostas, sessoes: S.sessoes }));
+  } catch (e) { /* sem armazenamento */ }
+}
+function set(patch) { Object.assign(S, patch); render(); }
+function first() { return S.nome.trim().split(" ")[0] || "amigo"; }
+function nextId() { idSeq += 1; return idSeq; }
+function toast(msg) {
+  S.toast = msg; render();
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => set({ toast: "" }), 2600);
+}
+
+// ---------------- voz (síntese) ----------------
+function pickVoice() {
+  const voices = window.speechSynthesis.getVoices() || [];
+  const want = S.trans === "en" ? "en" : "pt-br";
+  return voices.find((x) => String(x.lang).toLowerCase().replace("_", "-").startsWith(want)) ||
+    voices.find((x) => String(x.lang).toLowerCase().startsWith(S.trans === "en" ? "en" : "pt")) || null;
+}
+function stopVoice(noRender) {
+  try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) { /* */ }
+  S.playingId = null;
+  if (!noRender) render();
+}
+function chunks(text) {
+  const parts = text.match(/[^.!?;:]+[.!?;:]*/g) || [text];
+  const out = []; let cur = "";
+  parts.forEach((p) => { if ((cur + p).length > 180 && cur) { out.push(cur); cur = p; } else cur += p; });
+  if (cur.trim()) out.push(cur);
+  return out;
+}
+function speak(text, id) {
+  if (!S.caps.tts) return false;
+  try {
+    const synth = window.speechSynthesis;
+    synth.cancel();
+    const v = pickVoice();
+    const list = chunks(text);
+    const done = () => { if (S.playingId === id) { S.playingId = null; render(); } };
+    list.forEach((c, i) => {
+      const u = new SpeechSynthesisUtterance(c.trim());
+      u.lang = S.trans === "en" ? "en-US" : "pt-BR";
+      if (v) u.voice = v;
+      u.rate = 1;
+      if (i === list.length - 1) { u.onend = done; }
+      u.onerror = (ev) => { if (!ev || ev.error !== "interrupted" && ev.error !== "canceled") done(); };
+      synth.speak(u);
+    });
+    const d = estSecs(text);
+    S.playDur = d; S.playStart = Date.now(); S.playingId = id;
+    clearTimeout(playTimer);
+    playTimer = setTimeout(done, (d + 8) * 1000);
+    render();
+    return true;
+  } catch (e) { S.playingId = null; return false; }
+}
+function spokenFor(e) {
+  const vs = (e.refs || []).map((r) => VERSE_MAP[r] ? fullRef(r) + ". " + (S.trans === "en" ? VERSE_MAP[r][3] : VERSE_MAP[r][2]) : "");
+  return [e.text].concat(vs, [e.q ? "Para refletir: " + e.q : ""]).join(" ");
+}
+
+// ---------------- reconhecimento de voz ----------------
+function startListen() {
+  if (S.crisis) return;
+  if (!S.caps.sr) {
+    set({ srMsg: "Este navegador não oferece reconhecimento de voz (funciona no Chrome, Edge e Safari). Digite sua mensagem; Paulo responde do mesmo jeito." });
+    return;
+  }
+  if (IS_FILE || !window.isSecureContext) {
+    // ainda tentamos, mas avisamos se falhar
+  }
+  stopVoice(true);
+  const R = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let rec;
+  try { rec = new R(); } catch (e) { set({ srMsg: "Não foi possível abrir o reconhecimento de voz. Digite sua mensagem." }); return; }
+  let finalTxt = "";
+  const started = Date.now();
+  rec.lang = "pt-BR"; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
+  rec.onresult = (ev) => {
+    let tmp = "";
+    for (let i = ev.resultIndex; i < ev.results.length; i++) {
+      const r = ev.results[i];
+      if (r.isFinal) finalTxt += r[0].transcript; else tmp += r[0].transcript;
+    }
+    S.interim = (finalTxt + tmp).trim();
+    const el = document.getElementById("interim");
+    if (el) el.textContent = S.interim ? "“" + S.interim + "”" : "Fale em português. Toque de novo para enviar.";
+    const el2 = document.getElementById("callInterim");
+    if (el2) { el2.textContent = "Você: " + S.interim; el2.style.display = S.interim ? "block" : "none"; }
+  };
+  rec.onerror = (ev) => {
+    const code = ev && ev.error ? String(ev.error) : "";
+    S.srMsg = code === "not-allowed" || code === "service-not-allowed"
+      ? "O microfone não foi liberado. " + (IS_FILE || !window.isSecureContext ? "Aberto como arquivo (file://), o navegador bloqueia o microfone: abra o app por um endereço https ou localhost. " : "Permita o microfone nas configurações do navegador. ") + "Nada foi gravado. Você pode digitar."
+      : code === "no-speech" ? "Não ouvi nenhuma fala. Toque no microfone e tente de novo, ou digite."
+      : code === "network" ? "O reconhecimento de voz do navegador precisa de internet e falhou. Digite sua mensagem."
+      : code === "audio-capture" ? "Nenhum microfone encontrado neste aparelho. Digite sua mensagem."
+      : code === "aborted" ? ""
+      : "O reconhecimento de voz falhou. Digite sua mensagem.";
+  };
+  rec.onend = () => {
+    recObj = null;
+    const t = finalTxt.trim();
+    S.listening = false; S.interim = "";
+    render();
+    if (t) sendText(t, Math.max(1, Math.round((Date.now() - started) / 1000)));
+  };
+  try {
+    rec.start();
+    recObj = rec;
+    set({ listening: true, recStart: started, srMsg: "", interim: "" });
+  } catch (e) {
+    set({ srMsg: "Não foi possível abrir o microfone. Digite sua mensagem." });
+  }
+}
+function stopListen() { try { if (recObj) recObj.stop(); } catch (e) { /* */ } }
+function abortListen() { try { if (recObj) recObj.abort(); } catch (e) { /* */ } recObj = null; S.listening = false; }
+
+// ---------------- motor de regras ----------------
+function addPaulo(e, m, call) {
+  const id = nextId();
+  S.entries.push(Object.assign({}, e, { id, who: "paulo" }));
+  const sp = spokenFor(e);
+  if (call) { S.caption = sp; render(); speak(sp, id); }
+  else if (m === "audio") { render(); speak(sp, id); }
+  else render();
+}
+function counsel(topic, opening, count) {
+  const pool = VERSES.filter((v) => v[1] === topic);
+  let cand = pool.filter((v) => !S.shown.includes(v[0]));
+  const reset = cand.length < count;
+  if (reset) cand = pool;
+  const pick = cand.slice(0, count);
+  const refs = pick.map((v) => v[0]);
+  S.shown = reset ? refs : S.shown.concat(refs);
+  S.lastRef = refs[refs.length - 1];
+  S.lastTopic = topic;
+  const ctx = pick.map((v) => S.tom === "estudo" ? fullRef(v[0]) + ". " + BOOKS[bookOf(v[0])].ctx + " " + v[4] : fullRef(v[0]) + ". " + v[4]);
+  const qs = QUESTIONS[topic];
+  const q = qs[qCount % qs.length];
+  qCount += 1;
+  let note;
+  if (firstCounsel) { note = "Se fizer sentido, converse também com alguém da sua comunidade de fé ou com um profissional de confiança."; firstCounsel = false; }
+  return { text: opening, refs, ctx, q, note };
+}
+function opening(topic) {
+  const label = TOPIC_BY_ID[topic].label;
+  if (S.tom === "direto") return "Entendi, " + first() + ": o tema é " + label + ". Vou direto ao texto.";
+  if (S.tom === "estudo") return "Vamos olhar com calma o que a Escritura diz sobre " + label + ", " + first() + ", com o contexto de cada passagem. " + EMPATHY[topic];
+  return first() + ", obrigado por confiar isso a mim. " + EMPATHY[topic] + " Você não precisa carregar isso sozinho.";
+}
+function count() { return S.tom === "direto" ? 1 : 2; }
+function explainEntry() {
+  if (!S.lastRef) return { text: "Ainda não citei nenhum versículo nesta conversa. Conte o que está sentindo, ou escolha um tema." };
+  const v = VERSE_MAP[S.lastRef], b = BOOKS[bookOf(S.lastRef)];
+  return { text: "Sobre " + fullRef(S.lastRef) + ", vale olhar o livro e a passagem.", ctx: ["O livro de " + b.nome + ". " + b.ctx, "A passagem. " + v[4], "Ler alguns versículos antes e depois ajuda a não tirar a frase do lugar."] };
+}
+function anotherEntry() {
+  const t = S.lastTopic || S.temas[0] || "ansiedade";
+  return counsel(t, "Aqui vai outra passagem sobre " + TOPIC_BY_ID[t].label + ".", 1);
+}
+function respond(raw, m, call) {
+  const n = norm(raw);
+  if (isCrisis(n)) {
+    S.crisis = true;
+    stopVoice(true); abortListen();
+    const t = first() + ", obrigado por me contar. O que você descreveu é sério e merece a ajuda de uma pessoa agora. Vou pausar a conversa e mostrar onde buscar apoio imediato.";
+    S.entries.push({ id: nextId(), who: "paulo", text: t });
+    S.caption = t;
+    render();
+    return;
+  }
+  const ref = parseRef(n);
+  if (ref !== undefined) {
+    if (ref) {
+      const v = VERSE_MAP[ref];
+      S.lastRef = ref; S.lastTopic = v[1];
+      addPaulo({ text: "Aqui está " + fullRef(ref) + ".", refs: [ref], ctx: [fullRef(ref) + ". " + v[4]] }, m, call);
+    } else addPaulo({ text: "Neste protótipo eu tenho só " + VERSES.length + " versículos na base, e esse não está entre eles. Veja a lista na aba Versículos." }, m, call);
+    return;
+  }
+  if (["quem e voce", "voce e jesus", "voce e deus", "voce e o apostolo", "voce e real", "voce e humano", "voce e uma ia", "voce e um robo", "voce e pastor", "voce e padre", "voce e uma pessoa"].some((k) => n.includes(k))) {
+    addPaulo({ text: "Sou Paulo, um conselheiro bíblico virtual. Não sou Jesus, nem Deus, nem o apóstolo Paulo, e não sou pastor, padre ou terapeuta. Neste protótipo, minhas respostas vêm de regras fixas e de uma base de versículos conferidos; no produto final, viriam de uma inteligência artificial que só cita textos dessa base." }, m, call);
+    return;
+  }
+  if (n.length < 25 && /^(oi|ola|bom dia|boa tarde|boa noite|e ai|paz)\b/.test(n.trim())) { addPaulo({ text: "Olá, " + first() + ". Como você está hoje? Pode me contar o que está no seu coração." }, m, call); return; }
+  if (n.length < 25 && /^(obrigad|valeu|amem)/.test(n.trim())) { addPaulo({ text: "Fico feliz em caminhar com você nisso. Quer continuar neste assunto, ouvir outro versículo ou mudar de tema?" }, m, call); return; }
+  if (n.includes("contexto") || n.includes("explica")) { addPaulo(explainEntry(), m, call); return; }
+  if (n.includes("outro versiculo") || n.includes("mais um versiculo") || n.includes("outra passagem")) { addPaulo(anotherEntry(), m, call); return; }
+  const topic = detect(n, S.temas);
+  if (topic) { addPaulo(counsel(topic, opening(topic), count()), m, call); return; }
+  const fb = S.lastTopic || (S.temas.length ? S.temas[0] : null);
+  if (n.length > 30 && fb) {
+    const extra = S.tom === "acolhedor" ? " " + EMPATHY[fb] : "";
+    addPaulo(counsel(fb, "Pelo que você me contou até aqui, vou continuar no tema " + TOPIC_BY_ID[fb].label + "." + extra, 1), m, call);
+    return;
+  }
+  addPaulo({ text: "Quero entender melhor. Pode me contar, em uma ou duas frases, o que está pesando?" }, m, call);
+}
+function markMode(m) { if (!S.modesUsed.includes(m)) S.modesUsed.push(m); }
+function sendText(text, voiceDur) {
+  const t = String(text || "").trim();
+  if (!t || S.crisis) return;
+  const m = S.inCall ? "video" : S.mode, call = S.inCall;
+  markMode(m);
+  S.entries.push({ id: nextId(), who: "voce", text: t, voice: voiceDur !== undefined, dur: voiceDur });
+  S.draft = ""; S.typing = true;
+  render();
+  setTimeout(() => { S.typing = false; respond(t, m, call); }, 800);
+}
+function quick(label, kind) {
+  if (S.crisis) return;
+  const m = S.inCall ? "video" : S.mode, call = S.inCall;
+  S.entries.push({ id: nextId(), who: "voce", text: label });
+  S.typing = true; render();
+  setTimeout(() => { S.typing = false; addPaulo(kind === "ctx" ? explainEntry() : anotherEntry(), m, call); }, 600);
+}
+function greeting() {
+  const tradNote = S.trad === "catolica" || S.trad === "evangelica" ? "Vou usar passagens aceitas por católicos e evangélicos, sem defender a doutrina de uma igreja específica." : "Não vou presumir nenhuma tradição.";
+  const temasTxt = S.temas.map((t) => TOPIC_BY_ID[t].label).join(", ");
+  return "Olá, " + first() + ". Eu sou Paulo, um conselheiro bíblico virtual. Não sou Jesus, nem Deus, nem o apóstolo Paulo, e não substituo pastor, padre ou terapeuta. " + tradNote + " Você disse que quer conversar sobre " + (temasTxt || "o que estiver no seu coração") + ". Por onde quer começar?";
+}
+function newSession() {
+  stopVoice(true); abortListen();
+  S.entries = [{ id: nextId(), who: "paulo", text: greeting() }];
+  S.shown = []; S.lastRef = null; S.lastTopic = null; S.crisis = false; S.modesUsed = []; S.openText = []; S.srMsg = "";
+  qCount = 0; firstCounsel = true;
+}
+function startCall() {
+  if (S.crisis) return;
+  stopVoice(true);
+  Object.assign(S, { mode: "video", inCall: true, callSecs: 0, callType: false, srMsg: "" });
+  markMode("video");
+  const t = "Oi, " + first() + ". Estou aqui. Pode falar tocando no microfone, ou digitar se preferir. O que está no seu coração hoje?";
+  const id = nextId();
+  S.entries.push({ id, who: "paulo", text: t });
+  S.caption = t;
+  render();
+  if (!S.caps.tts) return;
+  speak(t, id);
+}
+function leaveCall() { stopVoice(true); abortListen(); set({ inCall: false, mode: "texto" }); }
+function endSession() {
+  stopVoice(true); abortListen();
+  S.inCall = false;
+  const userMsgs = S.entries.filter((e) => e.who === "voce").length;
+  const refs = [];
+  S.entries.forEach((e) => (e.refs || []).forEach((r) => { if (!refs.includes(r)) refs.push(r); }));
+  if (userMsgs > 0) {
+    S.sessoes = [{
+      id: Date.now(),
+      quando: new Date().toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }),
+      modos: (S.modesUsed.length ? S.modesUsed : [S.mode]).map((m) => MODE_LABEL[m]).join(", "),
+      msgs: userMsgs, refs, crise: S.crisis,
+    }].concat(S.sessoes).slice(0, 30);
+  }
+  set({ nota: 0, paga: "", coment: "", fbErr: "", screen: "avaliacao" });
+}
+function submitFeedback() {
+  if (!S.nota) return set({ fbErr: "Escolha uma nota de 1 a 5." });
+  if (!S.paga) return set({ fbErr: "Escolha uma opção de preço." });
+  S.respostas = S.respostas.concat([{ nome: first(), nota: S.nota, paga: S.paga, comentario: S.coment.trim(), modos: (S.modesUsed.length ? S.modesUsed : [S.mode]).map((m) => MODE_LABEL[m]).join(", ") }]);
+  S.mode = "texto"; newSession();
+  S.screen = "app"; S.tab = "perfil";
+  toast("Avaliação salva neste aparelho. Obrigado!");
+}
+function enter() {
+  const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(S.email.trim());
+  if (S.nome.trim().length < 2) return set({ accErr: "Digite seu nome." });
+  if (!ok) return set({ accErr: "Digite um e-mail válido." });
+  set({ accErr: "", step: 0, screen: "entrevista" });
+}
+function finishInterview() { newSession(); set({ tab: "conversar", mode: "texto", screen: "app" }); }
+function switchPerson() {
+  stopVoice(true);
+  Object.assign(S, { nome: "", email: "", trad: "", temas: [], tom: "acolhedor", trans: "pt", entries: [], screen: "acesso" });
+  render();
+}
+function wipe() {
+  if (!confirm("Apagar perfil, histórico e avaliações deste aparelho?")) return;
+  stopVoice(true);
+  try { localStorage.removeItem(STORE); } catch (e) { /* */ }
+  Object.assign(S, { respostas: [], sessoes: [], nome: "", email: "", trad: "", temas: [], entries: [], screen: "splash", introIdx: 0 });
+  render();
+  scheduleSplash();
+}
+
+// ---------------- pedaços de interface ----------------
+const ACC = "var(--accent)";
+function avatarHTML(size, label, cls) { return `<div class="av ${cls || ""}" style="width:${size}px;height:${size}px;font-size:${Math.round(size * 0.42)}px">${esc(label)}</div>`; }
+function btnPrimary(label, action, extra, disabled) { return `<button class="btn-primary" data-a="${action}" ${extra || ""} ${disabled ? "disabled" : ""}>${esc(label)}</button>`; }
+function btnGhost(label, action, extra, danger) { return `<button class="btn-ghost${danger ? " danger" : ""}" data-a="${action}" ${extra || ""}>${esc(label)}</button>`; }
+function chip(label, on, action, v, sub, full) {
+  return `<button class="chip${on ? " on" : ""}${sub ? " card" : ""}${full ? " full" : ""}" data-a="${action}" data-v="${esc(v)}" aria-pressed="${on}"><span class="cl">${esc(label)}</span>${sub ? `<span class="cs">${esc(sub)}</span>` : ""}</button>`;
+}
+function waveSVG(seed, n, live, cls) {
+  let s = "";
+  for (let i = 0; i < n; i++) {
+    const h = 4 + ((seed * 7 + i * 13 + (i % 3) * 5) % 15);
+    s += `<rect x="${i * 6 + 1}" y="${12 - h / 2}" width="3.5" height="${h}" rx="1.75" style="animation-delay:${(i % 7) * -0.13}s"/>`;
+  }
+  return `<svg class="wave ${live ? "live" : ""} ${cls || ""}" viewBox="0 0 ${n * 6} 24" preserveAspectRatio="none" aria-hidden="true">${s}</svg>`;
+}
+function verseLines(r) {
+  const v = VERSE_MAP[r]; if (!v) return "";
+  const parts = S.trans === "ambas" ? ["pt", "en"] : [S.trans === "en" ? "en" : "pt"];
+  return `<div class="verse">${parts.map((p) => `<div class="vt">${esc(p === "pt" ? v[2] : v[3])}</div><div class="vr">${esc(fullRef(r))} · ${TRANS_LABEL[p]}</div>`).join("")}</div>`;
+}
+function textBody(e) {
+  let h = `<div class="bt">${esc(e.text)}</div>`;
+  (e.refs || []).forEach((r) => { h += verseLines(r); });
+  if (e.ctx && e.ctx.length) h += `<div class="blk"><div class="bl">Contexto</div>${e.ctx.map((c) => `<div class="bc">${esc(c)}</div>`).join("")}</div>`;
+  if (e.q) h += `<div class="blk"><div class="bl">Para refletir</div><div class="bt">${esc(e.q)}</div></div>`;
+  if (e.note) h += `<div class="bn">${esc(e.note)}</div>`;
+  return h;
+}
+function audioBubble(e) {
+  const sp = spokenFor(e), d = estSecs(sp), playing = S.playingId === e.id;
+  const open = S.openText.includes(e.id) || !S.caps.tts;
+  let h = "";
+  if (S.caps.tts) {
+    const el = playing ? (Date.now() - S.playStart) / 1000 : 0;
+    h += `<div class="aud"><button class="play" data-a="play" data-v="${e.id}" aria-label="${playing ? "Parar" : "Ouvir"}">${playing ? "❚❚" : "▶"}</button>
+      <div class="audw">${waveSVG(e.id, 26, playing)}<div class="prog"><div class="progf${playing ? " run" : ""}" style="animation-duration:${d.toFixed(1)}s;animation-delay:-${el.toFixed(1)}s"></div></div></div>
+      <span class="dur">${mmss(d)}</span></div>
+      <button class="link" data-a="toggleText" data-v="${e.id}">${open ? "Ocultar texto" : "Ver texto" + (e.refs && e.refs.length ? " e versículos" : "")}</button>`;
+  } else h += `<div class="bn">A voz não está disponível neste navegador. Mostrando o texto da resposta.</div>`;
+  if (open) h += textBody(e);
+  return h;
+}
+function bubbleHTML(e) {
+  const mine = e.who === "voce";
+  let inner;
+  if (mine && e.voice) inner = `<div class="vmsg"><span class="vl">Voz</span>${waveSVG(e.id, 22, false, "light")}<span class="vl">${mmss(e.dur || 1)}</span></div><div class="vtr">Transcrição: ${esc(e.text)}</div>`;
+  else if (mine) inner = `<div class="bt">${esc(e.text)}</div>`;
+  else if (S.mode === "audio") inner = audioBubble(e);
+  else inner = textBody(e) + (S.caps.tts ? `<button class="link" data-a="play" data-v="${e.id}">${S.playingId === e.id ? "Parar áudio" : "Ouvir"}</button>` : "");
+  return `<div class="row ${mine ? "me" : "him"}">${mine ? "" : avatarHTML(26, "P")}<div class="bub ${mine ? "mine" : "his"}">${inner}</div></div>`;
+}
+function header(title, sub, right, left) {
+  return `<div class="hdr">${left || ""}<div class="hm"><div class="ht">${esc(title)}</div><div class="hs">${esc(sub)}</div></div>${right || ""}</div>`;
+}
+function crisisCard(dark) {
+  return `<div class="crisis ${dark ? "dark" : ""}" role="alert">
+    <div class="ct">Procure ajuda agora</div>
+    <div class="cl2"><b>988</b>: ligue ou mande mensagem de texto (Suicide &amp; Crisis Lifeline, EUA, 24 horas).</div>
+    <div class="cl2"><b>911</b>: emergência nos EUA.</div>
+    <div class="cl2"><b>188</b>: CVV no Brasil, 24 horas e gratuito (cvv.org.br).</div>
+    <div class="cl2"><b>190</b>: polícia no Brasil, em caso de violência.</div>
+    <div class="cs2">Se você corre perigo agora, vá para um lugar seguro e chame alguém de confiança. Paulo pausou o aconselhamento nesta sessão.</div>
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><a class="btn-call" href="tel:988">Ligar 988</a><a class="btn-call" href="sms:988">Texto 988</a><a class="btn-call" href="tel:188">Ligar 188</a></div>
+    <div style="margin-top:10px">${btnPrimary("Encerrar a sessão", "endSession")}</div></div>`;
+}
+const MIC_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 013 3v6a3 3 0 01-6 0V6a3 3 0 013-3zM6 11a6 6 0 0012 0M12 17v4M9 21h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+const STOP_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></svg>`;
+function micBtn(size) {
+  return `<button class="mic${S.listening ? " live" : ""}" data-a="mic" style="width:${size}px;height:${size}px" aria-label="${S.listening ? "Parar e enviar" : "Falar"}" ${S.crisis ? "disabled" : ""}>${S.listening ? STOP_SVG : MIC_SVG}</button>`;
+}
+function tabBar() {
+  const items = [
+    ["conversar", "Conversar", "M4 5h16v11H8l-4 4z"],
+    ["versiculos", "Versículos", "M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3z"],
+    ["historico", "Histórico", "M12 4a8 8 0 110 16 8 8 0 010-16zm0 4v5l3 2"],
+    ["perfil", "Perfil", "M12 4a4 4 0 110 8 4 4 0 010-8zM4 21a8 8 0 0116 0"],
+  ];
+  return `<nav class="tabs">${items.map((it) => `<button class="tab${S.tab === it[0] ? " on" : ""}" data-a="tab" data-v="${it[0]}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${it[2]}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>${it[1]}</span></button>`).join("")}</nav>`;
+}
+function modeSwitcher() {
+  return `<div class="seg">${["texto", "audio", "video"].map((m) => `<button class="${S.mode === m ? "on" : ""}" data-a="mode" data-v="${m}">${m === "video" ? "Videochamada" : MODE_LABEL[m]}</button>`).join("")}</div>`;
+}
+function secureNote() {
+  if (!S.caps.sr) return "";
+  if (IS_FILE || !window.isSecureContext) return `<div class="note">Para falar com o microfone, abra o app por um endereço <b>https</b> (ou localhost). Aberto como arquivo, a maioria dos navegadores bloqueia o microfone.</div>`;
+  return "";
+}
+function composerText() {
+  const userMsgs = S.entries.filter((e) => e.who === "voce").length;
+  return `<div class="comp"><div class="chips">${btnGhost("Explicar contexto", "quick", 'data-v="ctx"')}${btnGhost("Outro versículo", "quick", 'data-v="outro"')}${userMsgs === 0 ? TOPICS.slice(0, 4).map((t) => btnGhost(t.chip, "chipSend", `data-v="${esc(t.chip)}"`)).join("") : ""}</div>
+    <div class="inrow"><input id="draft" class="in pill" data-input="draft" value="${esc(S.draft)}" placeholder="Escreva para Paulo…" autocomplete="off" enterkeyhint="send"/><button class="send" data-a="send" aria-label="Enviar">↑</button></div></div>`;
+}
+function composerAudio() {
+  let h = `<div class="comp">`;
+  if (S.listening) h += `<div class="rec"><div class="recrow"><span class="rect" id="recTimer">Ouvindo ${mmss((Date.now() - S.recStart) / 1000)}</span>${waveSVG(7, 30, true)}</div><div class="hint" id="interim">${S.interim ? "“" + esc(S.interim) + "”" : "Fale em português. Toque de novo para enviar."}</div></div>`;
+  if (S.srMsg) h += `<div class="note">${esc(S.srMsg)}</div>`;
+  h += secureNote();
+  h += `<div class="inrow"><input id="draftA" class="in pill" data-input="draft" value="${esc(S.draft)}" placeholder="${S.caps.sr ? "Toque no microfone ou digite…" : "Digite (voz indisponível aqui)…"}" autocomplete="off" enterkeyhint="send"/>${S.draft.trim() ? `<button class="send big" data-a="send" aria-label="Enviar">↑</button>` : micBtn(52)}</div>
+    <div class="hint c">${S.caps.sr ? "Toque no microfone para falar e toque de novo para enviar." : "Seu navegador não tem reconhecimento de voz. Paulo responde em áudio mesmo quando você digita."}</div></div>`;
+  return h;
+}
+function conversarTab() {
+  const sub = S.crisis ? "aconselhamento pausado" : S.typing ? "digitando…" : S.playingId !== null ? "falando…" : "conselheiro virtual · IA";
+  const userMsgs = S.entries.filter((e) => e.who === "voce").length;
+  let msgs = S.entries.map(bubbleHTML).join("");
+  if (S.typing) msgs += `<div class="row him">${avatarHTML(26, "P")}<div class="bub his typing"><span></span><span></span><span></span></div></div>`;
+  if (S.crisis) msgs += `<div style="margin-top:10px">${crisisCard(false)}</div>`;
+  return `<div class="col">${header("Paulo", sub, userMsgs > 0 ? btnGhost("Encerrar", "endSession") : "", avatarHTML(36, "P"))}${modeSwitcher()}
+    <div class="scroll chat" id="chat"><div class="disc">Paulo é um conselheiro de IA, aqui simulado por regras. Não é Jesus, Deus nem o apóstolo, e não é pastor nem terapeuta.</div>${msgs}</div>
+    ${S.crisis ? "" : S.mode === "audio" ? composerAudio() : composerText()}</div>`;
+}
+function callScreen() {
+  const last = S.entries[S.entries.length - 1];
+  const speaking = S.playingId !== null && last && S.playingId === last.id;
+  const status = S.crisis ? "Aconselhamento pausado" : S.listening ? "Ouvindo você…" : S.typing ? "Paulo está pensando…" : speaking ? "Paulo está falando" : S.caps.tts ? "Paulo está ouvindo" : "Legendas ativas (voz indisponível neste navegador)";
+  const cBtn = (label, on, action, danger) => `<div class="cb"><button class="cbtn${on ? " on" : ""}${danger ? " end" : ""}" data-a="${action}">${esc(label.slice(0, 3))}</button><span>${esc(label)}</span></div>`;
+  let mid = "";
+  if (S.crisis) mid = `<div class="cmid crisismid">${crisisCard(true)}</div>`;
+  else {
+    mid = `<div class="cmid"><div class="cap you" id="callInterim" style="display:${S.listening && S.interim ? "block" : "none"}">Você: ${esc(S.interim)}</div>`;
+    if (S.captions && S.caption) mid += `<div class="cap">${esc(S.caption)}</div>`;
+    if (S.srMsg) mid += `<div class="cap warn">${esc(S.srMsg)}</div>`;
+    if (S.caps.sr && (IS_FILE || !window.isSecureContext)) mid += `<div class="cap warn">Microfone: abra o app por https ou localhost; como arquivo, o navegador bloqueia.</div>`;
+    if (S.callType) mid += `<div class="inrow" style="margin-top:8px"><input id="draftC" class="in pill callin" data-input="draft" value="${esc(S.draft)}" placeholder="Digite para Paulo…" autocomplete="off" enterkeyhint="send"/><button class="send" data-a="send">↑</button></div>`;
+    mid += `</div>`;
+  }
+  return `<div class="call">
+    <div class="ctop"><button class="clink" data-a="leaveCall">‹ Voltar ao chat</button><span id="callTimer">${mmss(S.callSecs)}</span></div>
+    <div class="cname"><div>Paulo</div><span>Conselheiro virtual · IA simulada por regras</span></div>
+    <div class="cstage"${S.crisis ? ' style="display:none"' : ""}><svg class="pav ${speaking ? "speaking" : ""}" viewBox="0 0 300 260" role="img" aria-label="Avatar de Paulo">
+      <circle class="r2" cx="150" cy="130" r="98"/><circle class="r1" cx="150" cy="130" r="80"/>
+      <circle cx="150" cy="130" r="66" fill="var(--accent)"/><circle cx="150" cy="112" r="23" fill="#FBF4EC" fill-opacity=".92"/>
+      <path d="M108 176 Q150 134 192 176 Q192 186 150 188 Q108 186 108 176 Z" fill="#FBF4EC" fill-opacity=".92"/></svg>
+      <div class="self">${S.cam ? avatarHTML(34, initials(S.nome), "alt") : `<span>Câmera desligada</span>`}<span>Você</span></div></div>
+    <div class="cstat">${esc(status)}</div>${mid}
+    <div class="cbar">${cBtn(S.cam ? "Câmera" : "Câmera off", !S.cam, "cam")}${cBtn(S.captions ? "Legendas" : "Legendas off", !S.captions, "captions")}
+      <div class="cb">${micBtn(64)}<span>${S.listening ? "Enviar" : "Falar"}</span></div>${cBtn("Teclado", S.callType, "callType")}${cBtn("Encerrar", false, "endSession", true)}</div></div>`;
+}
+function versiculosTab() {
+  if (S.vSel) {
+    const v = VERSE_MAP[S.vSel], b = BOOKS[bookOf(S.vSel)];
+    return `<div class="col">${header(fullRef(S.vSel), TOPIC_BY_ID[v[1]].nome, "", `<button class="back" data-a="vBack" aria-label="Voltar">‹</button>`)}
+      <div class="scroll pad"><div class="bigv">${esc(v[2])}</div><div class="sm">${TRANS_LABEL.pt}</div>
+      <div class="bigv en">${esc(v[3])}</div><div class="sm">${TRANS_LABEL.en}</div>
+      <div class="lbl">Contexto</div><div class="sec">${esc(b.nome)}. ${esc(b.ctx)}</div><div class="sec">${esc(v[4])}</div>
+      <div class="stack">${S.caps.tts ? btnGhost(S.playingId === -1 ? "Parar" : "Ouvir em voz alta", "playVerse") : ""}${btnPrimary("Conversar com Paulo sobre isso", "talkAbout")}</div></div></div>`;
+  }
+  const q = norm(S.vq);
+  const list = VERSES.filter((v) => (S.vTopic === "todos" || v[1] === S.vTopic) && (!q || norm(fullRef(v[0]) + " " + v[0] + " " + TOPIC_BY_ID[v[1]].nome + " " + v[2] + " " + v[3]).includes(q)));
+  const items = list.length ? list.map((v) => {
+    const t = S.trans === "en" ? v[3] : v[2];
+    return `<button class="vitem" data-a="vSel" data-v="${esc(v[0])}"><div class="vrow"><b>${esc(fullRef(v[0]))}</b><span class="sm">${esc(TOPIC_BY_ID[v[1]].nome)}</span></div><div class="sm">${esc(t.slice(0, 90))}${t.length > 90 ? "…" : ""}</div></button>`;
+  }).join("") : `<div class="sm" style="padding:12px">Nenhuma passagem da base corresponde a essa busca. Tente outra palavra ou referência.</div>`;
+  return `<div class="col">${header("Versículos", VERSES.length + " passagens conferidas, em domínio público")}
+    <div style="padding:10px 12px 4px"><input id="vq" class="in" data-input="vq" data-live="1" value="${esc(S.vq)}" placeholder="Buscar: Salmos 23, paz, perdão…" autocomplete="off"/>
+    <div class="chips" style="margin-top:8px">${chip("Todos", S.vTopic === "todos", "vTopic", "todos")}${TOPICS.map((t) => chip(t.nome, S.vTopic === t.id, "vTopic", t.id)).join("")}</div></div>
+    <div class="scroll" id="vlist" style="padding:4px 12px 12px">${items}</div></div>`;
+}
+function historicoTab() {
+  const userMsgs = S.entries.filter((e) => e.who === "voce").length;
+  const refsNow = [];
+  S.entries.forEach((e) => (e.refs || []).forEach((r) => { if (!refsNow.includes(r)) refsNow.push(r); }));
+  const atual = { id: 0, quando: "Agora", modos: (S.modesUsed.length ? S.modesUsed : [S.mode]).map((m) => MODE_LABEL[m]).join(", "), msgs: userMsgs, refs: refsNow, crise: S.crisis };
+  const all = [atual].concat(S.sessoes);
+  return `<div class="col">${header("Histórico", "Sessões guardadas neste aparelho")}<div class="scroll" id="hlist" style="padding:6px 12px 12px">${all.map((s) => {
+    const open = S.sessOpen === s.id;
+    return `<div class="hitem"><button class="hbtn" data-a="sessOpen" data-v="${s.id}"><div class="vrow"><b>${s.id === 0 ? "Sessão atual" : "Sessão de " + esc(s.quando)}</b><span class="sm">${esc(s.modos)}</span></div>
+      <div class="sm">${s.msgs} ${s.msgs === 1 ? "mensagem sua" : "mensagens suas"} · ${s.refs.length} ${s.refs.length === 1 ? "versículo" : "versículos"}${s.crise ? " · encaminhada para ajuda" : ""}</div></button>
+      ${open && s.refs.length ? `<div class="chips" style="margin-top:8px">${s.refs.map((r) => btnGhost(fullRef(r), "vSelGo", `data-v="${esc(r)}"`)).join("")}</div>` : ""}
+      ${s.id === 0 && userMsgs > 0 ? `<div style="margin-top:8px">${btnGhost("Continuar conversa", "tab", 'data-v="conversar"')}</div>` : ""}</div>`;
+  }).join("")}</div></div>`;
+}
+function perfilTab() {
+  const r = S.respostas;
+  const avg = r.length ? r.reduce((a, x) => a + x.nota, 0) / r.length : 0;
+  const would = r.filter((x) => x.paga !== PAY[0]).length;
+  const counts = PAY.map((p) => ({ p, n: r.filter((x) => x.paga === p).length }));
+  const maxN = Math.max(1, ...counts.map((c) => c.n));
+  let fb;
+  if (r.length) {
+    fb = `<div class="kpis">${[[String(r.length), "avaliações"], [avg.toFixed(1).replace(".", ","), "nota média"], [Math.round((would / r.length) * 100) + "%", "pagariam"]].map((m) => `<div class="kpi"><b>${m[0]}</b><span>${m[1]}</span></div>`).join("")}</div>
+      <div style="margin-top:10px">${counts.map((c) => `<div class="barrow"><span class="sm bl2">${esc(c.p)}</span><div class="bar"><div style="width:${(c.n / maxN) * 100}%"></div></div><span class="sm" style="width:18px;text-align:right">${c.n}</span></div>`).join("")}</div>
+      ${r.filter((x) => x.comentario).map((x) => `<div class="quote"><div>${esc(x.comentario)}</div><div class="sm">${esc(x.nome)} · nota ${x.nota} · ${esc(x.modos)}</div></div>`).join("")}`;
+  } else fb = `<div class="sm">Ao encerrar uma sessão, a avaliação aparece aqui. Ela fica só neste navegador.</div>`;
+  return `<div class="col">${header("Perfil", "Acesso de teste, sem senha")}<div class="scroll pad" id="plist">
+    <div class="prow">${avatarHTML(52, initials(S.nome), "alt")}<div style="min-width:0"><div class="pname">${esc(S.nome)}</div><div class="sm ell">${esc(S.email)}</div></div></div>
+    <div class="kv"><span class="sm">Tradição</span><span>${esc(TRAD_LABEL[S.trad] || "Não informada")}</span></div>
+    <div class="kv"><span class="sm">Temas</span><span style="text-align:right">${esc(S.temas.map((t) => TOPIC_BY_ID[t].nome).join(", "))}</span></div>
+    <div class="lbl">Tom de Paulo</div><div class="chips">${chip("Acolhedor", S.tom === "acolhedor", "tom", "acolhedor")}${chip("Direto", S.tom === "direto", "tom", "direto")}${chip("Estudo profundo", S.tom === "estudo", "tom", "estudo")}</div>
+    <div class="lbl">Tradução</div><div class="chips">${chip("Almeida 1911", S.trans === "pt", "trans", "pt")}${chip("World English Bible", S.trans === "en", "trans", "en")}${chip("As duas", S.trans === "ambas", "trans", "ambas")}</div>
+    <div class="lbl">Recursos deste navegador</div>
+    <div class="kv"><span class="sm">Voz de Paulo (leitura em voz alta)</span><span class="${S.caps.tts ? "ok" : "warnc"}">${S.caps.tts ? "Disponível" : "Indisponível"}</span></div>
+    <div class="kv"><span class="sm">Reconhecimento de fala (pt-BR)</span><span class="${S.caps.sr ? "ok" : "warnc"}">${S.caps.sr ? (IS_FILE || !window.isSecureContext ? "Existe, mas precisa de https" : "Disponível, pede o microfone") : "Indisponível"}</span></div>
+    <div class="lbl">Avaliações neste aparelho</div>${fb}
+    <div class="lbl">Transparência</div><div class="sm dark">Paulo é um conselheiro de inteligência artificial; neste protótipo, as respostas vêm de regras fixas e de uma base de ${VERSES.length} versículos. Não é Jesus, Deus nem o apóstolo Paulo; não é pastor, padre nem terapeuta. Em crise: 988 (EUA, ligação ou texto), 911, CVV 188 e 190 no Brasil.</div>
+    <div class="lbl">Fontes dos textos</div><div class="sm dark">Almeida, edição revista e corrigida, Lisboa 1911 — domínio público nos EUA (Project Gutenberg nº 62383), com a ortografia original. World English Bible — domínio público (eBible.org), sem alterações. Contextos e perguntas são texto próprio do protótipo, não texto bíblico.</div>
+    <div class="stack" style="margin-top:16px">${btnPrimary("Testar com outra pessoa", "switchPerson")}<div>${btnGhost("Apagar dados deste aparelho", "wipe", "", true)}</div></div></div></div>`;
+}
+function shell(content, footer, backAction) {
+  return `<div class="col ob"><div class="obtop">${backAction ? `<button class="clink dk" data-a="${backAction}">‹ Voltar</button>` : ""}</div><div class="scroll obc">${content}</div><div class="obf">${footer}</div></div>`;
+}
+const INTROS = [
+  ["Converse sobre o que está no seu coração", "Paulo escuta, cita versículos com referência exata, explica o contexto e devolve uma pergunta para você refletir."],
+  ["Do seu jeito: texto, áudio ou vídeo", "Escreva no chat, mande um áudio e ouça a resposta, ou abra uma videochamada com o avatar de Paulo, com legendas."],
+  ["Transparência em primeiro lugar", "Paulo é um conselheiro de inteligência artificial: não é Jesus, Deus nem o apóstolo, e não substitui pastor, padre ou terapeuta. Em crise, a conversa para e mostra ajuda humana: 988 e 911 nos EUA, CVV 188 e 190 no Brasil."],
+];
+function introScreen() {
+  const [t, d] = INTROS[S.introIdx];
+  const art = S.introIdx === 0
+    ? `<rect x="62" y="52" width="84" height="40" rx="14" fill="var(--accent)"/><rect x="96" y="98" width="84" height="30" rx="12" fill="#fff" stroke="var(--border)"/>`
+    : S.introIdx === 1
+    ? `<rect x="50" y="60" width="40" height="50" rx="10" fill="var(--accent)"/><circle cx="120" cy="85" r="22" fill="var(--accent2)"/><rect x="150" y="60" width="40" height="50" rx="10" fill="var(--gold)"/>`
+    : `<path d="M120 40 L160 56 L160 92 Q160 120 120 134 Q80 120 80 92 L80 56 Z" fill="var(--accent)"/><path d="M104 88 L116 100 L138 76" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`;
+  return shell(`<div class="intro"><svg viewBox="0 0 240 170" aria-hidden="true"><circle cx="120" cy="85" r="70" fill="var(--accentSoft)"/>${art}</svg><h2>${esc(t)}</h2><p>${esc(d)}</p></div>`,
+    `<div class="dots">${INTROS.map((_, i) => `<span class="${i === S.introIdx ? "on" : ""}"></span>`).join("")}</div>${btnPrimary(S.introIdx < 2 ? "Próximo" : S.nome ? "Continuar como " + first() : "Criar acesso de teste", "introNext")}`,
+    S.introIdx > 0 ? "introBack" : "");
+}
+function acessoScreen() {
+  return shell(`<h2 class="h1">Acesso de teste</h2><p class="sm">Só nome e e-mail, sem senha e sem verificação. Os dados ficam neste navegador.</p>
+    <label class="fl">Nome<input id="nome" class="in" data-input="nome" value="${esc(S.nome)}" placeholder="Como você quer ser chamado" autocomplete="given-name"/></label>
+    <label class="fl">E-mail<input id="email" class="in" data-input="email" type="email" value="${esc(S.email)}" placeholder="voce@exemplo.com" autocomplete="email"/></label>
+    ${S.accErr ? `<div class="err">${esc(S.accErr)}</div>` : ""}`, btnPrimary("Entrar", "enter"), "toIntro");
+}
+function entrevistaScreen() {
+  const titles = ["Qual é a sua tradição de fé?", "O que está no seu coração?", "Como Paulo deve conversar?", "Qual tradução você prefere?"];
+  const subs = ["Paulo não impõe doutrina; isso só ajusta o jeito de falar.", "Escolha até três temas.", "Você pode mudar depois no Perfil.", "Ambas são de domínio público."];
+  let body;
+  if (S.step === 0) body = `<div class="stack">${[["catolica", "Católica"], ["evangelica", "Evangélica"], ["outra", "Outra"], ["nao", "Prefiro não dizer"]].map((o) => chip(o[1], S.trad === o[0], "trad", o[0], "", true)).join("")}</div>`;
+  else if (S.step === 1) body = `<div class="chips">${TOPICS.map((t) => chip(t.nome, S.temas.includes(t.id), "tema", t.id)).join("")}</div>`;
+  else if (S.step === 2) body = `<div class="stack">${chip("Acolhedor", S.tom === "acolhedor", "tom", "acolhedor", "Mais escuta e conforto, dois versículos", true)}${chip("Direto", S.tom === "direto", "tom", "direto", "Respostas curtas, um versículo", true)}${chip("Estudo profundo", S.tom === "estudo", "tom", "estudo", "Contexto do livro e da passagem", true)}</div>`;
+  else body = `<div class="stack">${chip("Almeida 1911 (português)", S.trans === "pt", "trans", "pt", "Texto de Lisboa, com a ortografia da época", true)}${chip("World English Bible (inglês)", S.trans === "en", "trans", "en", "Inglês atual", true)}${chip("As duas lado a lado", S.trans === "ambas", "trans", "ambas", "Português e inglês", true)}</div>`;
+  const disabled = (S.step === 0 && !S.trad) || (S.step === 1 && !S.temas.length);
+  return shell(`<div class="steps">${[0, 1, 2, 3].map((i) => `<div class="${i <= S.step ? "on" : ""}"></div>`).join("")}</div><div class="sm">Entrevista inicial · ${S.step + 1} de 4</div><h2 class="h1">${titles[S.step]}</h2><p class="sm" style="margin-bottom:16px">${subs[S.step]}</p>${body}`,
+    btnPrimary(S.step < 3 ? "Continuar" : "Começar a conversar", "stepNext", "", disabled), "stepBack");
+}
+function avaliacaoScreen() {
+  return shell(`<h2 class="h1">Como foi a conversa?</h2><p class="sm">Neste protótipo, a avaliação fica só neste navegador; nada é enviado a um servidor.</p>
+    <div class="q">Nota para a conversa com Paulo</div><div class="stars">${[1, 2, 3, 4, 5].map((n) => `<button class="${S.nota >= n ? "on" : ""}" data-a="nota" data-v="${n}">${n}</button>`).join("")}</div><div class="sm">1 = não ajudou, 5 = ajudou muito</div>
+    <div class="q">Você pagaria por um app assim?</div><div class="chips">${PAY.map((p) => chip(p, S.paga === p, "paga", p)).join("")}</div>
+    <div class="q">O que faltou ou o que você mais gostou?</div><textarea id="coment" class="in" data-input="coment" rows="3" placeholder="Comentário opcional">${esc(S.coment)}</textarea>
+    ${S.fbErr ? `<div class="err">${esc(S.fbErr)}</div>` : ""}`,
+    `${btnPrimary("Enviar avaliação", "submitFeedback")}<button class="link c" data-a="skipFeedback">Pular e começar nova conversa</button>`);
+}
+function splashScreen() {
+  return `<div class="splash" data-a="splashGo"><svg viewBox="0 0 100 100" width="96" height="96" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="#fff" fill-opacity=".16"/><path d="M28 32 h44 a6 6 0 016 6 v22 a6 6 0 01-6 6 H46 l-12 10 v-10 h-6 a6 6 0 01-6-6 V38 a6 6 0 016-6z" fill="#fff"/><path d="M50 39 v20 M42 46 h16" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/></svg>
+    <div class="st">Fale com Paulo</div><div class="ss">Conselheiro bíblico por texto, áudio e videochamada</div><div class="sf">Protótipo para validação · toque para começar</div></div>`;
+}
+
+// ---------------- render ----------------
+const root = document.getElementById("app");
+function render() {
+  save();
+  const act = document.activeElement;
+  const focusId = act && act.id && root.contains(act) ? act.id : null;
+  const selS = focusId && act.selectionStart != null ? act.selectionStart : null;
+  const keep = {};
+  root.querySelectorAll(".scroll[id]").forEach((el) => { keep[el.id] = el.scrollTop; });
+
+  let html;
+  if (S.screen === "splash") html = splashScreen();
+  else if (S.screen === "intro") html = introScreen();
+  else if (S.screen === "acesso") html = acessoScreen();
+  else if (S.screen === "entrevista") html = entrevistaScreen();
+  else if (S.screen === "avaliacao") html = avaliacaoScreen();
+  else {
+    const body = S.tab === "conversar" ? conversarTab() : S.tab === "versiculos" ? versiculosTab() : S.tab === "historico" ? historicoTab() : perfilTab();
+    html = `<div class="col"><div class="main">${body}</div>${tabBar()}</div>${S.inCall ? callScreen() : ""}`;
+  }
+  if (S.toast) html += `<div class="toast" role="status">${esc(S.toast)}</div>`;
+  root.innerHTML = html;
+
+  Object.keys(keep).forEach((id) => { const el = document.getElementById(id); if (el && id !== "chat") el.scrollTop = keep[id]; });
+  const chat = document.getElementById("chat");
+  if (chat) {
+    const key = S.entries.length + "|" + S.typing + "|" + S.mode + "|" + S.crisis + "|" + S.tab;
+    if (key !== lastScrollKey) { chat.scrollTop = chat.scrollHeight; lastScrollKey = key; }
+    else if (keep.chat !== undefined) chat.scrollTop = keep.chat;
+  }
+  if (focusId) {
+    const el = document.getElementById(focusId);
+    if (el) { el.focus(); if (selS != null && el.setSelectionRange) { try { el.setSelectionRange(selS, selS); } catch (e) { /* */ } } }
+  }
+}
+
+// ---------------- eventos ----------------
+root.addEventListener("click", (ev) => {
+  const t = ev.target.closest("[data-a]");
+  if (!t || !root.contains(t) || t.disabled) return;
+  const a = t.getAttribute("data-a"), v = t.getAttribute("data-v");
+  switch (a) {
+    case "splashGo": afterSplash(); break;
+    case "introNext": if (S.introIdx < 2) set({ introIdx: S.introIdx + 1 }); else set({ screen: "acesso" }); break;
+    case "introBack": set({ introIdx: S.introIdx - 1 }); break;
+    case "toIntro": set({ screen: "intro" }); break;
+    case "enter": enter(); break;
+    case "trad": set({ trad: v }); break;
+    case "tema": { const id = v; S.temas = S.temas.includes(id) ? S.temas.filter((x) => x !== id) : S.temas.length >= 3 ? S.temas : S.temas.concat([id]); render(); break; }
+    case "tom": set({ tom: v }); break;
+    case "trans": set({ trans: v }); break;
+    case "stepNext": if (S.step < 3) set({ step: S.step + 1 }); else finishInterview(); break;
+    case "stepBack": if (S.step === 0) set({ screen: "acesso" }); else set({ step: S.step - 1 }); break;
+    case "tab": set({ tab: v, vSel: null }); break;
+    case "mode": if (v === "video") startCall(); else { stopVoice(true); abortListen(); set({ mode: v, srMsg: "" }); } break;
+    case "send": { const inp = root.querySelector("[data-input=draft]"); sendText(inp ? inp.value : S.draft); break; }
+    case "chipSend": sendText(v); break;
+    case "quick": quick(v === "ctx" ? "Explicar contexto" : "Outro versículo", v); break;
+    case "mic": if (S.listening) stopListen(); else startListen(); break;
+    case "play": { const id = Number(v); if (S.playingId === id) stopVoice(); else { const e = S.entries.find((x) => x.id === id); if (e) speak(spokenFor(e), id); } break; }
+    case "toggleText": { const id = Number(v); S.openText = S.openText.includes(id) ? S.openText.filter((x) => x !== id) : S.openText.concat([id]); render(); break; }
+    case "endSession": endSession(); break;
+    case "leaveCall": leaveCall(); break;
+    case "cam": set({ cam: !S.cam }); break;
+    case "captions": set({ captions: !S.captions }); break;
+    case "callType": set({ callType: !S.callType }); break;
+    case "vTopic": set({ vTopic: v }); break;
+    case "vSel": set({ vSel: v }); break;
+    case "vSelGo": set({ tab: "versiculos", vSel: v }); break;
+    case "vBack": set({ vSel: null }); break;
+    case "playVerse": { if (S.playingId === -1) stopVoice(); else { const vv = VERSE_MAP[S.vSel]; speak(fullRef(S.vSel) + ". " + (S.trans === "en" ? vv[3] : vv[2]), -1); } break; }
+    case "talkAbout": { const r = S.vSel; S.vSel = null; S.tab = "conversar"; if (S.inCall) { render(); break; } sendText(fullRef(r)); break; }
+    case "sessOpen": { const id = Number(v); set({ sessOpen: S.sessOpen === id ? null : id }); break; }
+    case "nota": set({ nota: Number(v) }); break;
+    case "paga": set({ paga: v }); break;
+    case "submitFeedback": submitFeedback(); break;
+    case "skipFeedback": S.mode = "texto"; newSession(); set({ screen: "app", tab: "conversar" }); break;
+    case "switchPerson": switchPerson(); break;
+    case "wipe": wipe(); break;
+  }
+});
+root.addEventListener("input", (ev) => {
+  const t = ev.target;
+  const f = t && t.getAttribute && t.getAttribute("data-input");
+  if (!f) return;
+  S[f] = t.value;
+  if (f === "draft" && S.mode === "audio" && !S.inCall) {
+    // alterna microfone/enviar sem perder o foco
+    const has = !!t.value.trim();
+    const row = t.parentElement;
+    const btn = row && row.querySelector(".send, .mic");
+    if (btn && ((has && btn.classList.contains("mic")) || (!has && btn.classList.contains("send")))) render();
+  }
+  if (t.getAttribute("data-live")) render();
+});
+root.addEventListener("keydown", (ev) => {
+  const t = ev.target;
+  if (ev.key !== "Enter" || ev.isComposing) return;
+  const f = t && t.getAttribute && t.getAttribute("data-input");
+  if (f === "draft") { ev.preventDefault(); sendText(t.value); }
+  else if (f === "email" || f === "nome") { ev.preventDefault(); enter(); }
+});
+
+// relógios sem re-render completo
+setInterval(() => {
+  if (S.inCall) {
+    S.callSecs += 1;
+    const el = document.getElementById("callTimer");
+    if (el) el.textContent = mmss(S.callSecs);
+  }
+  if (S.listening) {
+    const el = document.getElementById("recTimer");
+    if (el) el.textContent = "Ouvindo " + mmss((Date.now() - S.recStart) / 1000);
+  }
+}, 1000);
+
+function afterSplash() {
+  if (S.nome && S.email && S.trad) { newSession(); set({ screen: "app", tab: "conversar", mode: "texto" }); }
+  else set({ screen: "intro" });
+}
+function scheduleSplash() { setTimeout(() => { if (S.screen === "splash") afterSplash(); }, 2200); }
+
+// ---------------- início ----------------
+S.caps = { sr: !!(window.SpeechRecognition || window.webkitSpeechRecognition), tts: !!(window.speechSynthesis && window.SpeechSynthesisUtterance) };
+if (S.caps.tts) { try { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); } catch (e) { /* */ } }
+load();
+render();
+scheduleSplash();
+
+</script>
+</body>
+</html>
